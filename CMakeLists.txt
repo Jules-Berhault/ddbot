@@ -17,6 +17,9 @@ find_package(catkin REQUIRED COMPONENTS
   tf
 )
 
+find_package(Eigen3)
+include_directories(${Eigen3_INCLUDE_DIRS})
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
