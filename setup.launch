@@ -1,0 +1,3 @@
+<launch>
+<node name="simulator_node" pkg="ddbot" type="simulator_node" />
+</launch>
