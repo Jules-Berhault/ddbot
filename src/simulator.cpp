@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
     // Publisher and subscriber definition
     ros::Publisher visualization_publisher = n.advertise<visualization_msgs::Marker>("/visualization_marker", 0);
     ros::Subscriber u1_subscriber = n.subscribe("u1", 1000, u1_Callback);
-    ros::Subscriber u2_subscriber = n.subscribe("u1", 1000, u2_Callback);
+    ros::Subscriber u2_subscriber = n.subscribe("u2", 1000, u2_Callback);
     tf2_ros::TransformBroadcaster tf_broadcaster;
 
     // Parameters
@@ -51,10 +51,10 @@ int main(int argc, char **argv) {
     X[3] = n_private.param<double>("v0", 0.0);
     tf_name = n_private.param<std::string>("tf_name", ns);
 
-    // Message Generation
+    // tf Message
     geometry_msgs::TransformStamped boat_tf;
     boat_tf.header.frame_id = "map";
-    boat_tf.child_frame_id = ns;
+    boat_tf.child_frame_id = tf_name;
     boat_tf.transform.translation.z = 0;
 
     // Quaternion
@@ -90,9 +90,8 @@ int main(int argc, char **argv) {
         // Simulating the state of the boat
         integration_euler(X, u, h);
 
-        // Boat tf
+        // tf Message
         boat_tf.header.stamp = ros::Time::now();
-        boat_tf.child_frame_id = tf_name;
         boat_tf.transform.translation.x = X[0];
         boat_tf.transform.translation.y = X[1];
         q.setRPY(0.0, 0.0, X[2]);
