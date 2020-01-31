@@ -32,7 +32,7 @@ void integration_euler(Eigen::Vector4d &X, Eigen::Vector2d &u, double h) {
 
 int main(int argc, char **argv) {
     // ROS Node declaration
-    ros::init(argc, argv, "simulator_node");
+    ros::init(argc, argv, "simulator_node");//test
     ros::NodeHandle n;
     ros::NodeHandle n_private("~");
     std::string ns = ros::this_node::getNamespace();
