@@ -14,7 +14,7 @@
 
 #include "stdlib.h"
 
-Eigen::Vector2d u ={0.0, 0.0};
+Eigen::Vector2d u ={2.0, 2.0};
 Eigen::Vector4d X = {0.0, 0.0, 0.0, 0.0};
 
 void u1_Callback(const std_msgs::Float64::ConstPtr& msg){
@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
     X[1] = n_private.param<double>("y0", 0.0);
     X[2] = n_private.param<double>("theta0", 0.0);
     X[3] = n_private.param<double>("v0", 0.0);
-    tf_name = n_private.param<std::string>("tf_name", ns);
+    tf_name = n_private.param<std::string>("tf_name", "boat");
 
     // tf Message
     geometry_msgs::TransformStamped boat_tf;
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
     marker.color.r = 1.0;
     marker.color.g = 1.0;
     marker.color.b = 1.0;
-    marker.mesh_resource = "package://tp2/meshs/auv.dae";
+    marker.mesh_resource = "package://ddbot/meshs/boat.dae";
 
     // Setting the loop rate
     double h = 1.0/25.0;
