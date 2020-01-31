@@ -1,16 +1,22 @@
 #include "ros/ros.h"
 #include <WGS84toCartesian.hpp>
+#include "eigen3/Eigen/Dense"
 
 #include <std_msgs/String.h>
 #include <std_msgs/Float64.h>
 #include <nmea_msgs/Gppga.hpp>
 #include <geometry_msgs/Point.h>
 
-Eigen::
+Eigen::Vector2d nmea = {0.0, 0.0};
 
 void nmea_Callback(const std_msgs::Gppga::ConstPtr& msg){
-    u[1] = msg->data;
+    nmea[0] = msg->lat;
+    nmea[1] = msg->long;
 }
+
+void 
+    // Projection with the Mercator projection
+    array<double, 2> result{wgs84::toCartesian({48.4029251,-4.4690661}, {latitude, longitude})};
 
 int main(int argc, char **argv) {
 
