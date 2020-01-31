@@ -3,58 +3,86 @@
 #include "math.h"
 #include "eigen3/Eigen/Dense"
 
+#include "std_msgs/Float64.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/Twist.h"
 #include "visualization_msgs/Marker.h"
-#include "std_msgs/Float64MultiArray.h"
 
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
 
 #include "stdlib.h"
-#include "iostream"
+
+Eigen::Vector2d u ={0.0, 0.0};
+Eigen::Vector4d X = {0.0, 0.0, 0.0, 0.0};
+
+void u1_Callback(const std_msgs::Float64::ConstPtr& msg){
+    u[0] = msg->data;
+}
+
+void u2_Callback(const std_msgs::Float64::ConstPtr& msg){
+    u[1] = msg->data;
+}
+
+void integration_euler(Eigen::Vector4d X, Eigen::Vector2d u, double h) {
+    Eigen::Vector4d dX = {X[3]*cos(X[2]), X[3]*sin(X[2]), u[0] - u[1], u[0] + u[1] - abs(X[3])*X[3]};
+    X = X + h*dX;
+}
 
 int main(int argc, char **argv) {
+    // ROS Node declaration
     ros::init(argc, argv, "simulator_node");
     ros::NodeHandle n;
     ros::NodeHandle n_private("~");
-
-    ros::Publisher state = n.advertise<geometry_msgs::PoseStamped>("boat_state", 1000);
-    ros::Publisher vis_pub = n.advertise<visualization_msgs::Marker>("/visualization_marker", 0 );
-    ros::Subscriber command = n.subscribe("boat_command", 1000, commandCallback);
-
     std::string ns = ros::this_node::getNamespace();
 
-    tf2_ros::TransformBroadcaster tf_broadcast;
-    geometry_msgs::TransformStamped transformStamped;
-    transformStamped.header.frame_id = "map";
-    transformStamped.child_frame_id = ns;
-    
-    double x0, y0, theta0;
+    // Publisher and subscriber definition
+    ros::Publisher visualization_publisher = n.advertise<visualization_msgs::Marker>("/visualization_marker", 0);
+    ros::Subscriber u1_subscriber = n.subscribe("u1", 1000, u1_Callback);
+    ros::Subscriber u2_subscriber = n.subscribe("u1", 1000, u2_Callback);
+    tf2_ros::TransformBroadcaster tf_broadcaster;
+
+    // Parameters
     std::string tf_name;
-    x0 = n_private.param<double>("x0", 20.0);
-    y0 = n_private.param<double>("y0", 20.0);
-    theta0 = n_private.param<double>("theta0", 0.0);
+    X[0] = n_private.param<double>("x0", 0.0);
+    X[1] = n_private.param<double>("y0", 0.0);
+    X[2] = n_private.param<double>("theta0", 0.0);
+    X[3] = n_private.param<double>("v0", 0.0);
     tf_name = n_private.param<std::string>("tf_name", ns);
 
-    // Creating the message
-    geometry_msgs::PoseStamped msg_state;
+    // Message Generation
+    geometry_msgs::TransformStamped boat_tf;
+    boat_tf.header.frame_id = "map";
+    boat_tf.child_frame_id = ns;
+    boat_tf.transform.translation.z = 0;
 
     // Quaternion
     tf::Quaternion q;
-    
+
+    // Visualization Message
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = tf_name;
+    marker.ns = ns;
+    marker.id = 0;
+    marker.type = visualization_msgs::Marker::MESH_RESOURCE;
+    marker.action = visualization_msgs::Marker::ADD;
     q.setRPY(0.0, 0.0, 0.0);
-    tf::quaternionTFToMsg(q, msg_state.pose.orientation);
-    msg_state.header.stamp = ros::Time::now();
-    msg_state.header.frame_id = tf_name;
-    msg_state.pose.position.z = 0.0;
+    tf::quaternionTFToMsg(q, marker.pose.orientation);
+    marker.scale.x = 1;
+    marker.scale.y = 1;
+    marker.scale.z = 1;
+    marker.color.a = 1.0;
+    marker.color.r = 1.0;
+    marker.color.g = 1.0;
+    marker.color.b = 1.0;
+    marker.mesh_resource = "package://tp2/meshs/auv.dae";
 
-    Eigen::Vector3d X = {x0, y0, theta0};
+    // Setting the loop rate
     double h = 1.0/25.0;
-
     ros::Rate loop_rate(25);
 
+    // Loop 
     while (ros::ok()) {
         // Getting the incomming messages
         ros::spinOnce();
@@ -62,44 +90,18 @@ int main(int argc, char **argv) {
         // Simulating the state of the boat
         integration_euler(X, u, h);
 
-        // Creating the tf for the boat
-        transformStamped.header.stamp = ros::Time::now();
-        transformStamped.child_frame_id = tf_name;
-        transformStamped.transform.translation.x = X[0];
-        transformStamped.transform.translation.y = X[1];
-        transformStamped.transform.translation.z = 0;
+        // Boat tf
+        boat_tf.header.stamp = ros::Time::now();
+        boat_tf.child_frame_id = tf_name;
+        boat_tf.transform.translation.x = X[0];
+        boat_tf.transform.translation.y = X[1];
         q.setRPY(0.0, 0.0, X[2]);
-        tf::quaternionTFToMsg(q, transformStamped.transform.rotation);
+        tf::quaternionTFToMsg(q, boat_tf.transform.rotation);
+        tf_broadcaster.sendTransform(boat_tf);
 
-        tf_broadcast.sendTransform(transformStamped);
-
-        // State Message
-        msg_state.pose.position.x = X[0];
-        msg_state.pose.position.y = X[1];
-        q.setRPY(0.0, 0.0, X[2]);
-        tf::quaternionTFToMsg(q, msg_state.pose.orientation);
-
-        // Publishing the message
-        state.publish(msg_state);
-
-        visualization_msgs::Marker marker;
-        marker.header.frame_id = tf_name;
+        // Visualization Message
         marker.header.stamp = ros::Time();
-        marker.ns = ns;
-        marker.id = 0;
-        marker.type = visualization_msgs::Marker::MESH_RESOURCE;
-        marker.action = visualization_msgs::Marker::ADD;
-        q.setRPY(0.0, 0.0, 0.0);
-        tf::quaternionTFToMsg(q, marker.pose.orientation);
-        marker.scale.x = 1;
-        marker.scale.y = 1;
-        marker.scale.z = 1;
-        marker.color.a = 1.0;
-        // marker.color.r = 1.0;
-        // marker.color.g = 1.0;
-        // marker.color.b = 1.0;
-        marker.mesh_resource = "package://tp2/meshs/auv.dae";
-        vis_pub.publish(marker);
+        visualization_publisher.publish(marker);
 
         loop_rate.sleep();
     }
