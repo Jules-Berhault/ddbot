@@ -6,15 +6,36 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/AccelStamped.h>
 
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
+
 #include <stdlib.h>
+
+double Lx = 10;
+double Ly = 7;
 
 Eigen::Vector2d wanted_position = {0.0, 0.0};
 Eigen::Vector2d wanted_speed = {0.0, 0.0};
 Eigen::Vector2d wanted_acceleration = {0.0, 0.0};
 
+void position(Eigen::Vector2d &wanted_position, double &t) {
+    wanted_position[0] = Lx*std::sin(t);
+    wanted_position[1] = Ly*std::sin(2*t);
+}
+
+void speed(Eigen::Vector2d &wanted_speed, double &t) {
+    wanted_position[0] = Lx*std::cos(t);
+    wanted_position[1] = 2*Ly*std::cos(2*t);
+}
+
+void acceleration(Eigen::Vector2d &wanted_acceleration, double &t) {
+    wanted_position[0] = -Lx*std::sin(t);
+    wanted_position[1] = -4*Ly*std::sin(2*t);
+}
+
 int main(int argc, char **argv) {
     // ROS Node declaration
-    ros::init(argc, argv, "trajectory_node");//test
+    ros::init(argc, argv, "trajectory_node");
     ros::NodeHandle n;
     ros::NodeHandle n_private("~");
 
@@ -47,6 +68,8 @@ int main(int argc, char **argv) {
         ros::spinOnce();
 
         // Wanted position message
+        w_point.point.x = wanted_position[0];
+        w_point.point.y = wanted_position[1];
         position_publisher.publish(w_point);
 
         // Wanted speed message
