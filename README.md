@@ -1,1 +1,1 @@
-saluta
+salut
