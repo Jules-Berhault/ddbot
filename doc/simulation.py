@@ -1,7 +1,5 @@
 from roblib import *
 
-dt = 0.01
-
 def dynamique(X, u):
     X = X.flatten()
     u = u.flatten()
@@ -15,56 +13,49 @@ def dynamique(X, u):
 
 
 def control(x, w, dw):
-    xf = x.flatten()
-    w = w.flatten()
-    dw = dw.flatten()
-    
+    xf = x.flatten()    
 
     px, py, theta, v = xf
-    ct = cos(theta)
-    st = sin(theta)
-    A = array([[ct - v*st, ct + v*st], [st + v*ct, st -v*ct]])
+    ct = np.cos(theta)
+    st = np.sin(theta)
+    A = np.array([[ct - v*st, ct + v*st], [st + v*ct, st -v*ct]])
     B = np.array([[-abs(v)*v*ct],[-abs(v)*v*st]])
-
-    v1 = 1*(w[0] - px) + 2*(dw[0]  - v*ct)
-    v2 = 1*(w[1] - py) + 2*(dw[1]  - v*st)
-
-
-    z = array([[v1], [v2]])
-    u =  inv(A)@(z - B)
-
+    
+    y = np.array([[px], [py]])
+    dy = np.array([[v*ct], [v*st]])
+    
+    v = (w - y) + 2*(dw - dy)
+    u =  np.linalg.solve(A, (v - B))
     return u
 
 
 def set_point(t):
-   
     omega = 0.5
-    w = array([[R*cos(omega*t)], 
-               [R*sin(omega*t)]])
-    dw = array([[-omega*R*sin(omega*t)], 
-                [R*omega*cos(omega*t)]]) 
+    w = R*array([[cos(omega*t)], [sin(omega*t)]])
+    dw = R*array([[-omega*sin(omega*t)], [omega*cos(omega*t)]]) 
     return w, dw 
 
 
-X = array([[0.1, 0.1, 0.1, 0.1]]).T
-
-theta = linspace(0,  2*pi, 100)
-
-R = 5
-cx = R*cos(theta)
-cy = R*sin(theta)
-
-ax = init_figure(-10, 10, -10, 10)
-u = array([[0, 0]]).T
-
-for t in arange(0, 10, dt):
-    clear(ax)
-    w, dw = set_point(t)
-   
-    u = control(X, w, dw)
-    xdot = dynamique(X, u)
-    X = X + xdot*t
-    plot(cx, cy)
-    scatter(w[0], w[1])
-    draw_tank(X)
+if __name__ == "__main__" :
+    X = array([[0.1, 0.1, 0.1, 0.1]]).T
+    u = array([[0, 0]]).T
     
+    R = 5
+    theta = linspace(0,  2*pi, 100)
+    cx = R*cos(theta)
+    cy = R*sin(theta)
+    
+    
+    dt = 0.05
+
+    ax = init_figure(-10, 10, -10, 10)
+
+    for t in arange(0, 10, dt):
+        clear(ax)
+        w, dw = set_point(t)
+    
+        u = control(X, w, dw)
+        X = X + dt * dynamique(X, u)
+        plt.plot(cx, cy, color="crimson", alpha=0.4, linewidth=2)
+        plt.scatter(w[0], w[1], color="crimson")
+        draw_tank(X, r=0.5, col="teal")
