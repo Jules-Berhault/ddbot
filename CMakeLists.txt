@@ -122,10 +122,7 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(
-# include
-  ${catkin_INCLUDE_DIRS}
-)
+include_directories(${catkin_INCLUDE_DIRS} include)
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
@@ -141,6 +138,7 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(simulator_node src/simulator.cpp)
+add_executable(projection_node src/projection.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -154,6 +152,8 @@ add_executable(simulator_node src/simulator.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(simulator_node ${catkin_LIBRARIES})
+target_link_libraries(projection_node ${catkin_LIBRARIES})
+
 
 #############
 ## Install ##

@@ -14,7 +14,7 @@
 
 #include "stdlib.h"
 
-Eigen::Vector2d u ={2.0, 2.0};
+Eigen::Vector2d u ={0.0, 0.0};
 Eigen::Vector4d X = {0.0, 0.0, 0.0, 0.0};
 
 void u1_Callback(const std_msgs::Float64::ConstPtr& msg){

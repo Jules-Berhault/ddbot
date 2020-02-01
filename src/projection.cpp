@@ -2,35 +2,60 @@
 #include <WGS84toCartesian.hpp>
 #include "eigen3/Eigen/Dense"
 
-#include <std_msgs/String.h>
 #include <std_msgs/Float64.h>
-#include <nmea_msgs/Gppga.hpp>
-#include <geometry_msgs/Point.h>
+#include <nmea_msgs/Gpgga.h>
+#include <geometry_msgs/PointStamped.h>
+
+#include <stdlib.h>
 
 Eigen::Vector2d nmea = {0.0, 0.0};
+Eigen::Vector2d nmea_reference = {0.0, 0.0};
+Eigen::Vector2d cartesian = {0.0, 0.0};
 
-void nmea_Callback(const std_msgs::Gppga::ConstPtr& msg){
+void nmea_Callback(const nmea_msgs::Gpgga::ConstPtr& msg){
     nmea[0] = msg->lat;
-    nmea[1] = msg->long;
+    nmea[1] = msg->lon;
 }
 
-void 
-    // Projection with the Mercator projection
-    array<double, 2> result{wgs84::toCartesian({48.4029251,-4.4690661}, {latitude, longitude})};
 
 int main(int argc, char **argv) {
-
-    // Setting the loop rate
-    double h = 1.0/25.0;
-    ros::Rate loop_rate(25);
+    // ROS Node declaration
+    ros::init(argc, argv, "projection_node");//test
+    ros::NodeHandle n;
+    ros::NodeHandle n_private("~");
 
     // Publisher and Subscriber
-    ros::Publisher position_publisher = n.advertise<geometry_msgs::Point>("cartesian_coordinates", 0);
+    ros::Publisher position_publisher = n.advertise<geometry_msgs::PointStamped>("cartesian_coordinates", 0);
     ros::Subscriber nmea_subscriber = n.subscribe("nmea_coordinates", 1000, nmea_Callback);
 
+    // Reference point for nmea projection in parameter
+    nmea_reference[0] = n_private.param<double>("reference_latitude", 48.199334);
+    nmea_reference[1] = n_private.param<double>("reference_longitude", -3.015625);
+
+    // Coordinate position message
+    geometry_msgs::PointStamped cartesian_point;
+    cartesian_point.header.frame_id = "boat";
+    cartesian_point.point.z = 0.0;
+
+    // Setting the loop rate
+    ros::Rate loop_rate(25);
 
     // Loop 
     while (ros::ok()) {
+        // Getting the incomming messages
+        ros::spinOnce();
+
+        // Projection with the Mercator projection
+        std::array<double, 2> result{wgs84::toCartesian({nmea_reference[0], nmea_reference[1]}, {nmea[0], nmea[1]})};
+        cartesian[0] = result[0];
+        cartesian[1] = result[1];
+
+        // Publishing the cartesian coordinates
+        cartesian_point.header.stamp = ros::Time::now();
+        cartesian_point.point.x = cartesian[0];
+        cartesian_point.point.y = cartesian[1];
+
+        position_publisher.publish(cartesian_point);
 
     }
     return 0;
