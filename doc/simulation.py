@@ -58,4 +58,5 @@ if __name__ == "__main__" :
         X = X + dt * dynamique(X, u)
         plt.plot(cx, cy, color="crimson", alpha=0.4, linewidth=2)
         plt.scatter(w[0], w[1], color="crimson")
-        draw_tank(X, r=0.5, col="teal")
+        draw_boat(X, r=0.5, col="teal")
+        
