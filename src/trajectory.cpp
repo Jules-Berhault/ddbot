@@ -1,4 +1,5 @@
 #include "ros/ros.h"
+#include "tf/tf.h"
 #include "eigen3/Eigen/Dense"
 
 #include <std_msgs/Float64.h>
@@ -6,8 +7,10 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/AccelStamped.h>
 
+#include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
+#include <visualization_msgs/Marker.h>
 
 #include <stdlib.h>
 
@@ -43,12 +46,35 @@ int main(int argc, char **argv) {
     ros::Publisher position_publisher = n.advertise<geometry_msgs::PointStamped>("wanted_position", 0);
     ros::Publisher speed_publisher = n.advertise<geometry_msgs::TwistStamped>("wanted_speed", 0);
     ros::Publisher acceleration_publisher = n.advertise<geometry_msgs::AccelStamped>("wanted_acceleration", 0);
+    tf2_ros::TransformBroadcaster tf_broadcaster;
+    ros::Publisher visualization_publisher = n.advertise<visualization_msgs::Marker>("/target_marker", 0);
 
-    // tf linked to the point
+    // tf Message
+    geometry_msgs::TransformStamped boat_tf;
+    boat_tf.header.frame_id = "map";
+    boat_tf.child_frame_id = "target";
+    boat_tf.transform.translation.z = 0;
+
+    // Visualization Message
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "target";
+    marker.id = 0;
+    marker.type = visualization_msgs::Marker::CYLINDER;
+    marker.action = visualization_msgs::Marker::ADD;
+    tf::Quaternion q;
+    q.setRPY(0.0, 0.0, 0.0);
+    tf::quaternionTFToMsg(q, marker.pose.orientation);
+    marker.scale.x = 1;
+    marker.scale.y = 1;
+    marker.scale.z = 0.1;
+    marker.color.a = 1.0;
+    marker.color.r = 1.0;
+    marker.color.g = 1.0;
+    marker.color.b = 1.0;
 
     // Wanted position message
     geometry_msgs::PointStamped w_point;
-    //w_point.header.frame_id = "boat"; to be lonked to the tf
+    w_point.header.frame_id = "map";
     w_point.point.z = 0.0;
 
     // Wanted speed message
@@ -78,7 +104,17 @@ int main(int argc, char **argv) {
         // Wanted acceleration message
         acceleration_publisher.publish(w_accel);
 
+        // tf Message
+        boat_tf.header.stamp = ros::Time::now();
+        boat_tf.transform.translation.x = wanted_position[0];
+        boat_tf.transform.translation.y = wanted_position[1];
+        q.setRPY(0.0, 0.0, 0.0);
+        tf::quaternionTFToMsg(q, boat_tf.transform.rotation);
+        tf_broadcaster.sendTransform(boat_tf);
 
+        // Visualization Message
+        marker.header.stamp = ros::Time();
+        visualization_publisher.publish(marker);
     }
     return 0;
 }
