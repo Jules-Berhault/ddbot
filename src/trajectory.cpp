@@ -99,9 +99,13 @@ int main(int argc, char **argv) {
         position_publisher.publish(w_point);
 
         // Wanted speed message
+        w_twist.twist.linear.x = wanted_speed[0];
+        w_twist.twist.linear.y = wanted_speed[1];
         speed_publisher.publish(w_twist);
 
         // Wanted acceleration message
+        w_accel.accel.linear.x = wanted_acceleration[0];
+        w_accel.accel.linear.y = wanted_acceleration[1];
         acceleration_publisher.publish(w_accel);
 
         // tf Message
