@@ -1,6 +1,0 @@
-<launch>
-<node name="simulator_node" pkg="ddbot" type="simulator_node" />
-<node name="controller_node" pkg="ddbot" type="controller_node" />
-<node name="trajectory_node" pkg="ddbot" type="trajectory_node" />
-
-</launch>
