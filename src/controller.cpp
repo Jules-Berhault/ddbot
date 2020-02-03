@@ -8,6 +8,8 @@
 #include <vector>
 #include "std_msgs/String.h"
 #include "geometry_msgs/PoseStamped.h"
+#include "geometry_msgs/PointStamped.h"
+#include "geometry_msgs/TwistStamped.h"
 #include "geometry_msgs/Twist.h"
 #include <visualization_msgs/Marker.h>
 #include "tf/tf.h"
@@ -17,7 +19,8 @@ using namespace std;
 
 double theta, posx, posy; 
 Eigen::Vector4d X = {0.0, 0.0, 0.0, 0.0};
-
+Eigen::Vector2d w = {5, 5}; 
+    Eigen::Vector2d dw = {0, 0}; 
 
 void infosCallback(const std_msgs::Float64MultiArray::ConstPtr& msg)
 {
@@ -27,6 +30,22 @@ void infosCallback(const std_msgs::Float64MultiArray::ConstPtr& msg)
     X[3] = msg->data[3];
 
 }
+
+void positionCallback(const geometry_msgs::PointStamped::ConstPtr& msg)
+{
+    w[0] = msg->point.x;
+    w[1] = msg->point.y;
+
+}
+
+void speedCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
+{
+    dw[0] = msg->twist.linear.x;
+    dw[1] = msg->twist.linear.y;
+
+}
+
+
 
 void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u)
 {   
@@ -50,7 +69,7 @@ void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u)
     Eigen::Vector2d a = {1, 2};
     Eigen::Vector2d b = {2, 3};
     Eigen::Vector2d z;
-    z = 2*(w - Y) + 2*(dw - dY);
+    z = 1*(w - Y) + 1*(dw - dY);
     u = A.fullPivLu().solve(z - B);
 }
 
@@ -62,14 +81,16 @@ int main(int argc, char **argv)
 
     ros::NodeHandle n;
     ros::Subscriber state_suscribe = n.subscribe("state", 1000, &infosCallback);
+    ros::Subscriber wanted_suscribe = n.subscribe("wanted_position", 1000, &positionCallback);
+    ros::Subscriber wanted_speed_suscribe = n.subscribe("wanted_speed", 1000, &speedCallback);
+    
     ros::Publisher pub = n.advertise<geometry_msgs::Twist>("commande", 10);
     geometry_msgs::Twist command_u;
     
     ros::Rate loop_rate(25);
     
     Eigen::Vector2d u; 
-    Eigen::Vector2d w = {5, 5}; 
-    Eigen::Vector2d dw = {0, 0}; 
+    
 
     while (ros::ok())
     {
