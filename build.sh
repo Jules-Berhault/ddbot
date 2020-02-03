@@ -1,5 +1,4 @@
 #!/bin/bash
-
 cd ~/workspaceRos/build;
 make;
 rviz &
