@@ -139,12 +139,8 @@ include_directories(${catkin_INCLUDE_DIRS} include)
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(simulator_node src/simulator.cpp)
 add_executable(projection_node src/projection.cpp)
-<<<<<<< HEAD
-add_executable(controller_node src/controller.cpp)
-
-=======
 add_executable(trajectory_node src/trajectory.cpp)
->>>>>>> d4422baaf958961abc54dc2524654ad305695159
+add_executable(controller_node src/controller.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -159,12 +155,9 @@ add_executable(trajectory_node src/trajectory.cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(simulator_node ${catkin_LIBRARIES})
 target_link_libraries(projection_node ${catkin_LIBRARIES})
-<<<<<<< HEAD
 target_link_libraries(controller_node ${catkin_LIBRARIES})
 
-=======
 target_link_libraries(trajectory_node ${catkin_LIBRARIES})
->>>>>>> d4422baaf958961abc54dc2524654ad305695159
 
 #############
 ## Install ##
