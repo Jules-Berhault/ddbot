@@ -17,7 +17,8 @@ def control(x, w, dw):
     px, py, theta, v = xf
     ct = np.cos(theta)
     st = np.sin(theta)
-    A = np.array([[ct - v*st, ct + v*st], [st + v*ct, st -v*ct]])
+    A = np.array([[ct - v*st, ct + v*st], 
+                  [st + v*ct, st -v*ct]])
     B = np.array([[-abs(v)*v*ct],[-abs(v)*v*st]])
     y = np.array([[px], [py]])
     dy = np.array([[v*ct], [v*st]])

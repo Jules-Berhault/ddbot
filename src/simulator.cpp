@@ -2,12 +2,12 @@
 #include "tf/tf.h"
 #include "math.h"
 #include "eigen3/Eigen/Dense"
-
+#include <vector>
 #include "std_msgs/Float64.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/Twist.h"
 #include "visualization_msgs/Marker.h"
-
+#include "std_msgs/Float64MultiArray.h"
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
@@ -17,13 +17,12 @@
 Eigen::Vector2d u ={0.0, 0.0};
 Eigen::Vector4d X = {0.0, 0.0, 0.0, 0.0};
 
-void u1_Callback(const std_msgs::Float64::ConstPtr& msg){
-    u[0] = msg->data;
+void commande_Callback(const geometry_msgs::Twist::ConstPtr& msg){
+    u[0] = msg->linear.x;
+    u[1] = msg->linear.y;
 }
 
-void u2_Callback(const std_msgs::Float64::ConstPtr& msg){
-    u[1] = msg->data;
-}
+
 
 void integration_euler(Eigen::Vector4d &X, Eigen::Vector2d &u, double h) {
     Eigen::Vector4d dX = {X[3]*cos(X[2]), X[3]*sin(X[2]), u[0] - u[1], u[0] + u[1] - abs(X[3])*X[3]};
@@ -32,15 +31,15 @@ void integration_euler(Eigen::Vector4d &X, Eigen::Vector2d &u, double h) {
 
 int main(int argc, char **argv) {
     // ROS Node declaration
-    ros::init(argc, argv, "simulator_node");
+    ros::init(argc, argv, "simulator_node");//test
     ros::NodeHandle n;
     ros::NodeHandle n_private("~");
     std::string ns = ros::this_node::getNamespace();
 
     // Publisher and subscriber definition
     ros::Publisher visualization_publisher = n.advertise<visualization_msgs::Marker>("/visualization_marker", 0);
-    ros::Subscriber u1_subscriber = n.subscribe("u1", 1000, u1_Callback);
-    ros::Subscriber u2_subscriber = n.subscribe("u2", 1000, u2_Callback);
+    ros::Publisher state_publisher = n.advertise<std_msgs::Float64MultiArray>("state", 0);
+    ros::Subscriber u1_subscriber = n.subscribe("commande", 1000, commande_Callback);
     tf2_ros::TransformBroadcaster tf_broadcaster;
 
     // Parameters
@@ -56,6 +55,10 @@ int main(int argc, char **argv) {
     boat_tf.header.frame_id = "map";
     boat_tf.child_frame_id = tf_name;
     boat_tf.transform.translation.z = 0;
+    // State Message
+
+    std_msgs::Float64MultiArray pose; 
+
 
     // Quaternion
     tf::Quaternion q;
@@ -89,6 +92,13 @@ int main(int argc, char **argv) {
 
         // Simulating the state of the boat
         integration_euler(X, u, h);
+        
+        // State message
+
+        
+        pose.data.clear();
+        std::vector<double> Xv = {X[0], X[1], X[2], X[3]};
+        pose.data.insert(pose.data.end(), Xv.begin(), Xv.end());
 
         // tf Message
         boat_tf.header.stamp = ros::Time::now();
@@ -101,7 +111,8 @@ int main(int argc, char **argv) {
         // Visualization Message
         marker.header.stamp = ros::Time();
         visualization_publisher.publish(marker);
-
+        state_publisher.publish(pose);
+        ros::spinOnce();
         loop_rate.sleep();
     }
     return 0;
