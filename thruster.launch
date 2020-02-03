@@ -1,0 +1,3 @@
+<launch>
+<node name="thruster_node" pkg="ddbot" type="thruster.py" />
+</launch>
