@@ -50,27 +50,29 @@ int main(int argc, char **argv) {
     ros::Publisher visualization_publisher = n.advertise<visualization_msgs::Marker>("/target_marker", 0);
 
     // tf Message
-    geometry_msgs::TransformStamped boat_tf;
-    boat_tf.header.frame_id = "map";
-    boat_tf.child_frame_id = "target";
-    boat_tf.transform.translation.z = 0;
+    geometry_msgs::TransformStamped target_tf;
+    target_tf.header.frame_id = "map";
+    target_tf.child_frame_id = "target";
+    target_tf.transform.translation.z = 0;
 
     // Visualization Message
     visualization_msgs::Marker marker;
     marker.header.frame_id = "target";
+    marker.ns = "target";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::CYLINDER;
     marker.action = visualization_msgs::Marker::ADD;
-    tf::Quaternion q;
-    q.setRPY(0.0, 0.0, 0.0);
-    tf::quaternionTFToMsg(q, marker.pose.orientation);
-    marker.scale.x = 1;
-    marker.scale.y = 1;
+    marker.pose.position.x = 0.0;
+    marker.pose.position.y = 0.0;
+    marker.pose.position.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = 0.5;
+    marker.scale.y = 0.5;
     marker.scale.z = 0.1;
     marker.color.a = 1.0;
     marker.color.r = 1.0;
-    marker.color.g = 1.0;
-    marker.color.b = 1.0;
+    marker.color.g = 0.03;
+    marker.color.b = 0.67;
 
     // Wanted position message
     geometry_msgs::PointStamped w_point;
@@ -86,12 +88,18 @@ int main(int argc, char **argv) {
     w_accel.accel.linear.z = 0.0;
 
     // Setting the loop rate
-    ros::Rate loop_rate(25);
+    ros::Rate loop_rate(10);
 
     // Loop 
     while (ros::ok()) {
         // Getting the incomming messages
         ros::spinOnce();
+
+        // Updating the trajectory
+        double t = ros::Time::now().toSec();
+        position(wanted_position, t);
+        speed(wanted_speed, t);
+        acceleration(wanted_acceleration, t);
 
         // Wanted position message
         w_point.point.x = wanted_position[0];
@@ -109,16 +117,17 @@ int main(int argc, char **argv) {
         acceleration_publisher.publish(w_accel);
 
         // tf Message
-        boat_tf.header.stamp = ros::Time::now();
-        boat_tf.transform.translation.x = wanted_position[0];
-        boat_tf.transform.translation.y = wanted_position[1];
-        q.setRPY(0.0, 0.0, 0.0);
-        tf::quaternionTFToMsg(q, boat_tf.transform.rotation);
-        tf_broadcaster.sendTransform(boat_tf);
+        target_tf.header.stamp = ros::Time::now();
+        target_tf.transform.translation.x = wanted_position[0];
+        target_tf.transform.translation.y = wanted_position[1];
+        target_tf.transform.rotation.w = 1.0;
+        tf_broadcaster.sendTransform(target_tf);
 
         // Visualization Message
         marker.header.stamp = ros::Time();
         visualization_publisher.publish(marker);
+
+        loop_rate.sleep();
     }
     return 0;
 }
