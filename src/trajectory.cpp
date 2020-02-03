@@ -14,26 +14,27 @@
 
 #include <stdlib.h>
 
-double Lx = 10;
-double Ly = 7;
+double Lx = 25;
+double Ly = 10;
+double omega = 0.1;
 
 Eigen::Vector2d wanted_position = {0.0, 0.0};
 Eigen::Vector2d wanted_speed = {0.0, 0.0};
 Eigen::Vector2d wanted_acceleration = {0.0, 0.0};
 
 void position(Eigen::Vector2d &wanted_position, double &t) {
-    wanted_position[0] = Lx*std::sin(t);
-    wanted_position[1] = Ly*std::sin(2*t);
+    wanted_position[0] = Lx*std::sin(omega*t);
+    wanted_position[1] = Ly*std::sin(2*omega*t);
 }
 
 void speed(Eigen::Vector2d &wanted_speed, double &t) {
-    wanted_position[0] = Lx*std::cos(t);
-    wanted_position[1] = 2*Ly*std::cos(2*t);
+    wanted_speed[0] = omega*Lx*std::cos(omega*t);
+    wanted_speed[1] = 2*omega*Ly*std::cos(2*omega*t);
 }
 
 void acceleration(Eigen::Vector2d &wanted_acceleration, double &t) {
-    wanted_position[0] = -Lx*std::sin(t);
-    wanted_position[1] = -4*Ly*std::sin(2*t);
+    wanted_acceleration[0] = -omega*omega*Lx*std::sin(omega*t);
+    wanted_acceleration[1] = -4*omega*omega*Ly*std::sin(2*omega*t);
 }
 
 int main(int argc, char **argv) {
@@ -49,30 +50,20 @@ int main(int argc, char **argv) {
     tf2_ros::TransformBroadcaster tf_broadcaster;
     ros::Publisher visualization_publisher = n.advertise<visualization_msgs::Marker>("/target_marker", 0);
 
-    // tf Message
-    geometry_msgs::TransformStamped target_tf;
-    target_tf.header.frame_id = "map";
-    target_tf.child_frame_id = "target";
-    target_tf.transform.translation.z = 0;
-
     // Visualization Message
     visualization_msgs::Marker marker;
-    marker.header.frame_id = "target";
-    marker.ns = "target";
+    marker.header.frame_id = "map";
     marker.id = 0;
-    marker.type = visualization_msgs::Marker::CYLINDER;
+    marker.type = visualization_msgs::Marker::SPHERE;
     marker.action = visualization_msgs::Marker::ADD;
-    marker.pose.position.x = 0.0;
-    marker.pose.position.y = 0.0;
-    marker.pose.position.z = 0.0;
     marker.pose.orientation.w = 1.0;
-    marker.scale.x = 0.5;
-    marker.scale.y = 0.5;
-    marker.scale.z = 0.1;
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
     marker.color.a = 1.0;
     marker.color.r = 1.0;
-    marker.color.g = 0.03;
-    marker.color.b = 0.67;
+    marker.color.g = 0.0;
+    marker.color.b = 0.0;
 
     // Wanted position message
     geometry_msgs::PointStamped w_point;
@@ -88,7 +79,7 @@ int main(int argc, char **argv) {
     w_accel.accel.linear.z = 0.0;
 
     // Setting the loop rate
-    ros::Rate loop_rate(10);
+    ros::Rate loop_rate(50);
 
     // Loop 
     while (ros::ok()) {
@@ -116,15 +107,10 @@ int main(int argc, char **argv) {
         w_accel.accel.linear.y = wanted_acceleration[1];
         acceleration_publisher.publish(w_accel);
 
-        // tf Message
-        target_tf.header.stamp = ros::Time::now();
-        target_tf.transform.translation.x = wanted_position[0];
-        target_tf.transform.translation.y = wanted_position[1];
-        target_tf.transform.rotation.w = 1.0;
-        tf_broadcaster.sendTransform(target_tf);
-
         // Visualization Message
         marker.header.stamp = ros::Time();
+        marker.pose.position.x = wanted_position[0];
+        marker.pose.position.y = wanted_position[1];
         visualization_publisher.publish(marker);
 
         loop_rate.sleep();
