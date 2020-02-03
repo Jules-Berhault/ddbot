@@ -45,6 +45,15 @@ void speedCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
 
 }
 
+void testCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
+{
+    double u, v;
+    u = msg->twist.linear.x;
+    v = msg->twist.linear.y;
+    ROS_WARN("message x : %f", u);
+
+}
+
 
 
 void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u)
@@ -83,6 +92,7 @@ int main(int argc, char **argv)
     ros::Subscriber state_suscribe = n.subscribe("state", 1000, &infosCallback);
     ros::Subscriber wanted_suscribe = n.subscribe("wanted_position", 1000, &positionCallback);
     ros::Subscriber wanted_speed_suscribe = n.subscribe("wanted_speed", 1000, &speedCallback);
+    ros::Subscriber test = n.subscribe("/cmd_speed", 1000, &testCallback);
     
     ros::Publisher pub = n.advertise<geometry_msgs::Twist>("commande", 10);
     geometry_msgs::Twist command_u;
