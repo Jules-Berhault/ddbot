@@ -65,9 +65,7 @@ int main(int argc, char **argv) {
     marker.pose.position.x = 0.0;
     marker.pose.position.y = 0.0;
     marker.pose.position.z = 0.0;
-    tf::Quaternion q;
-    q.setRPY(0.0, 0.0, 0.0);
-    tf::quaternionTFToMsg(q, marker.pose.orientation);
+    marker.pose.orientation.w = 1.0;
     marker.scale.x = 0.5;
     marker.scale.y = 0.5;
     marker.scale.z = 0.1;
@@ -97,6 +95,12 @@ int main(int argc, char **argv) {
         // Getting the incomming messages
         ros::spinOnce();
 
+        // Updating the trajectory
+        double t = ros::Time::now().toSec();
+        position(wanted_position, t);
+        speed(wanted_speed, t);
+        acceleration(wanted_acceleration, t);
+
         // Wanted position message
         w_point.point.x = wanted_position[0];
         w_point.point.y = wanted_position[1];
@@ -116,13 +120,14 @@ int main(int argc, char **argv) {
         target_tf.header.stamp = ros::Time::now();
         target_tf.transform.translation.x = wanted_position[0];
         target_tf.transform.translation.y = wanted_position[1];
-        q.setRPY(0.0, 0.0, 0.0);
-        tf::quaternionTFToMsg(q, target_tf.transform.rotation);
+        target_tf.transform.rotation.w = 1.0;
         tf_broadcaster.sendTransform(target_tf);
 
         // Visualization Message
         marker.header.stamp = ros::Time();
         visualization_publisher.publish(marker);
+
+        loop_rate.sleep();
     }
     return 0;
 }
