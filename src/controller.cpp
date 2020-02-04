@@ -18,6 +18,9 @@
 using namespace std; 
 
 double theta, posx, posy; 
+double kp, kd; 
+
+
 Eigen::Vector4d X = {0.0, 0.0, 0.0, 0.0};
 Eigen::Vector2d w = {5, 5}; 
     Eigen::Vector2d dw = {0, 0}; 
@@ -45,12 +48,19 @@ void speedCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
 
 }
 
-void testCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
+void testCallback(const geometry_msgs::Twist::ConstPtr& msg)
 {
     double u, v;
-    u = msg->twist.linear.x;
-    v = msg->twist.linear.y;
-    ROS_WARN("message x : %f", u);
+    u = msg->linear.x;
+    v = msg->angular.z;
+    kp = u; 
+    kd = v; 
+    ROS_WARN("kp %f", kp);
+    ROS_WARN("kd %f", kd);
+    
+
+
+    //ROS_WARN("message x : %f", u);
 
 }
 
@@ -61,7 +71,7 @@ void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u)
     double x = X[0]; 
     double y = X[1];
 
-    ROS_WARN("x : %f", x);
+    //ROS_WARN("x : %f", x);
     double theta = X[2];
     double v = X[3];
 
@@ -78,7 +88,8 @@ void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u)
     Eigen::Vector2d a = {1, 2};
     Eigen::Vector2d b = {2, 3};
     Eigen::Vector2d z;
-    z = 1*(w - Y) + 1*(dw - dY);
+    // z = 2*(w - Y) + 2*(dw - dY);
+    z = kp*(w - Y) + kd*(dw - dY);
     u = A.fullPivLu().solve(z - B);
 }
 
@@ -92,9 +103,10 @@ int main(int argc, char **argv)
     ros::Subscriber state_suscribe = n.subscribe("state", 1000, &infosCallback);
     ros::Subscriber wanted_suscribe = n.subscribe("wanted_position", 1000, &positionCallback);
     ros::Subscriber wanted_speed_suscribe = n.subscribe("wanted_speed", 1000, &speedCallback);
-    ros::Subscriber test = n.subscribe("/cmd_speed", 1000, &testCallback);
+    ros::Subscriber test = n.subscribe("/cmd_vel", 1000, &testCallback);
     
     ros::Publisher pub = n.advertise<geometry_msgs::Twist>("commande", 10);
+    
     geometry_msgs::Twist command_u;
     
     ros::Rate loop_rate(25);
