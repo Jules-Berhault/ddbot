@@ -141,6 +141,7 @@ add_executable(simulator_node src/simulator.cpp)
 add_executable(projection_node src/projection.cpp)
 add_executable(trajectory_node src/trajectory.cpp)
 add_executable(controller_node src/controller.cpp)
+add_executable(observer_node src/observer.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -156,8 +157,8 @@ add_executable(controller_node src/controller.cpp)
 target_link_libraries(simulator_node ${catkin_LIBRARIES})
 target_link_libraries(projection_node ${catkin_LIBRARIES})
 target_link_libraries(controller_node ${catkin_LIBRARIES})
-
 target_link_libraries(trajectory_node ${catkin_LIBRARIES})
+target_link_libraries(observer_node ${catkin_LIBRARIES})
 
 #############
 ## Install ##
