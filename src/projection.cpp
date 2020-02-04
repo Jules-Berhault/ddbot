@@ -1,10 +1,10 @@
 #include "ros/ros.h"
-#include <WGS84toCartesian.hpp>
+#include "WGS84toCartesian.hpp"
 #include "eigen3/Eigen/Dense"
 
-#include <std_msgs/Float64.h>
-#include <nmea_msgs/Gpgga.h>
-#include <geometry_msgs/PointStamped.h>
+#include "std_msgs/Float64.h"
+#include "sensor_msgs/NavSatFix.h"
+#include "geometry_msgs/PointStamped.h"
 
 #include <stdlib.h>
 
@@ -12,9 +12,9 @@ Eigen::Vector2d nmea = {0.0, 0.0};
 Eigen::Vector2d nmea_reference = {0.0, 0.0};
 Eigen::Vector2d cartesian = {0.0, 0.0};
 
-void nmea_Callback(const nmea_msgs::Gpgga::ConstPtr& msg){
-    nmea[0] = msg->lat;
-    nmea[1] = msg->lon;
+void nmea_Callback(const sensor_msgs::NavSatFix::ConstPtr& msg){
+    nmea[0] = msg->latitude;
+    nmea[1] = msg->longitude;
 }
 
 

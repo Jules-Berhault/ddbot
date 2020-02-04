@@ -22,8 +22,6 @@ void commande_Callback(const geometry_msgs::Twist::ConstPtr& msg){
     u[1] = msg->linear.y;
 }
 
-
-
 void integration_euler(Eigen::Vector4d &X, Eigen::Vector2d &u, double h) {
     Eigen::Vector4d dX = {X[3]*cos(X[2]), X[3]*sin(X[2]), u[0] - u[1], u[0] + u[1] - abs(X[3])*X[3]};
     X = X + h*dX;
