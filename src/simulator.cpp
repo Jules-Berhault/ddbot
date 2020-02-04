@@ -2,19 +2,19 @@
 #include "tf/tf.h"
 #include "math.h"
 #include "eigen3/Eigen/Dense"
-#include <vector>
+
 #include "std_msgs/Float64.h"
 #include "geometry_msgs/PoseStamped.h"
-#include "geometry_msgs/Twist.h"
+#include "geometry_msgs/TwistStamped.h"
+#include <geometry_msgs/TransformStamped.h>
+
 #include "visualization_msgs/Marker.h"
-#include "std_msgs/Float64MultiArray.h"
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_broadcaster.h>
-#include <geometry_msgs/TransformStamped.h>
 
 #include "stdlib.h"
 
-Eigen::Vector2d u ={0.0, 0.0};
+Eigen::Vector2d u = {0.0, 0.0};
 Eigen::Vector4d X = {0.0, 0.0, 0.0, 0.0};
 
 void u1_Callback(const std_msgs::Float64::ConstPtr& msg){
@@ -37,13 +37,16 @@ int main(int argc, char **argv) {
     ros::NodeHandle n_private("~");
     std::string ns = ros::this_node::getNamespace();
 
-    // Publisher and subscriber definition
-    ros::Publisher visualization_publisher = n.advertise<visualization_msgs::Marker>("/visualization_marker", 0);
-    ros::Publisher state_publisher = n.advertise<std_msgs::Float64MultiArray>("state", 0);
-    //ros::Subscriber u1_subscriber = n.subscribe("commande", 1000, commande_Callback);
+    // Publisher
+    ros::Publisher visualization_publisher = n.advertise<visualization_msgs::Marker>("visualization_marker", 1000);
+    ros::Publisher state_publisher = n.advertise<geometry_msgs::PoseStamped>("state", 1000);
+    ros::Publisher speed_publisher = n.advertise<geometry_msgs::TwistStamped>("vel",1000);
+    ros::Publisher yaw_publisher = n.advertise<std_msgs::Float64>("cap",1000);
+    tf2_ros::TransformBroadcaster tf_broadcaster;
+
+    // Subscriber
     ros::Subscriber u1_subscriber = n.subscribe("u1", 1000, u1_Callback);
     ros::Subscriber u2_subscriber = n.subscribe("u2", 1000, u2_Callback);
-    tf2_ros::TransformBroadcaster tf_broadcaster;
 
     // Parameters
     std::string tf_name;
@@ -58,10 +61,17 @@ int main(int argc, char **argv) {
     boat_tf.header.frame_id = "map";
     boat_tf.child_frame_id = tf_name;
     boat_tf.transform.translation.z = 0;
+
     // State Message
+    geometry_msgs::PoseStamped state;
+    state.header.frame_id = "map";
 
-    std_msgs::Float64MultiArray pose; 
+    // Velocity Message
+    geometry_msgs::TwistStamped velocity;
+    velocity.header.frame_id = "map";
 
+    // Yaw Message
+    std_msgs::Float64 theta;
 
     // Quaternion
     tf::Quaternion q;
@@ -97,11 +107,20 @@ int main(int argc, char **argv) {
         integration_euler(X, u, h);
         
         // State message
+        state.header.stamp = ros::Time::now();
+        state.pose.position.x = X[0];
+        state.pose.position.y = X[1];
+        state_publisher.publish(state);
 
-        
-        pose.data.clear();
-        std::vector<double> Xv = {X[0], X[1], X[2], X[3]};
-        pose.data.insert(pose.data.end(), Xv.begin(), Xv.end());
+        // Velocity
+        velocity.header.stamp = ros::Time::now();
+        velocity.twist.linear.x = X[3]*std::cos(X[2]);
+        velocity.twist.linear.y = X[3]*std::sin(X[2]);
+        speed_publisher.publish(velocity);
+
+        // Yaw Message
+        theta.data = X[2];
+        yaw_publisher.publish(theta);
 
         // tf Message
         boat_tf.header.stamp = ros::Time::now();
@@ -114,8 +133,8 @@ int main(int argc, char **argv) {
         // Visualization Message
         marker.header.stamp = ros::Time();
         visualization_publisher.publish(marker);
-        state_publisher.publish(pose);
-        ros::spinOnce();
+
+        // Loop Rate
         loop_rate.sleep();
     }
     return 0;
