@@ -6,7 +6,8 @@
 #include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/AccelStamped.h>
-
+#include <iterator>
+#include <random>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
@@ -80,6 +81,13 @@ int main(int argc, char **argv) {
 
     // Setting the loop rate
     ros::Rate loop_rate(50);
+    
+    // Setting the gaussian noise
+
+    const double mean = 0.0;
+    const double stddev = 1;
+    std::default_random_engine generator;
+    std::normal_distribution<double> dist(mean, stddev);
 
     // Loop 
     while (ros::ok()) {
@@ -93,8 +101,8 @@ int main(int argc, char **argv) {
         acceleration(wanted_acceleration, t);
 
         // Wanted position message
-        w_point.point.x = wanted_position[0];
-        w_point.point.y = wanted_position[1];
+        w_point.point.x = wanted_position[0] + dist(generator);
+        w_point.point.y = wanted_position[1] + dist(generator);
         position_publisher.publish(w_point);
 
         // Wanted speed message
