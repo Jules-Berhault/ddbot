@@ -33,7 +33,7 @@ sub_u2 = rospy.Subscriber('u2', Float64, callback_u2)
 """ initialisation arduino """
 arduino=init_arduino_line()
 
-rate = rospy.Rate(25) # 10hz
+rate = rospy.Rate(25) # 25hz
 
 
 while not rospy.is_shutdown():
