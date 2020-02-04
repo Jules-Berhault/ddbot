@@ -10,7 +10,6 @@
 
 #include "visualization_msgs/Marker.h"
 #include <tf2/LinearMath/Quaternion.h>
-#include <tf2_ros/transform_broadcaster.h>
 
 #include "stdlib.h"
 
@@ -42,7 +41,6 @@ int main(int argc, char **argv) {
     ros::Publisher state_publisher = n.advertise<geometry_msgs::PointStamped>("cartesian_coordinates", 1000);
     ros::Publisher speed_publisher = n.advertise<geometry_msgs::TwistStamped>("vel",1000);
     ros::Publisher yaw_publisher = n.advertise<std_msgs::Float64>("cap",1000);
-    tf2_ros::TransformBroadcaster tf_broadcaster;
 
     // Subscriber
     ros::Subscriber u1_subscriber = n.subscribe("u1", 1000, u1_Callback);
@@ -55,12 +53,6 @@ int main(int argc, char **argv) {
     X[2] = n_private.param<double>("theta0", 0.0);
     X[3] = n_private.param<double>("v0", 0.0);
     tf_name = n_private.param<std::string>("tf_name", "boat");
-
-    // tf Message
-    geometry_msgs::TransformStamped boat_tf;
-    boat_tf.header.frame_id = "map";
-    boat_tf.child_frame_id = tf_name;
-    boat_tf.transform.translation.z = 0;
 
     // State Message
     geometry_msgs::PointStamped state;
@@ -78,13 +70,11 @@ int main(int argc, char **argv) {
 
     // Visualization Message
     visualization_msgs::Marker marker;
-    marker.header.frame_id = tf_name;
+    marker.header.frame_id = "map";
     marker.ns = ns;
     marker.id = 0;
     marker.type = visualization_msgs::Marker::MESH_RESOURCE;
     marker.action = visualization_msgs::Marker::ADD;
-    q.setRPY(0.0, 0.0, 0.0);
-    tf::quaternionTFToMsg(q, marker.pose.orientation);
     marker.scale.x = 1;
     marker.scale.y = 1;
     marker.scale.z = 1;
@@ -122,16 +112,12 @@ int main(int argc, char **argv) {
         theta.data = X[2];
         yaw_publisher.publish(theta);
 
-        // tf Message
-        boat_tf.header.stamp = ros::Time::now();
-        boat_tf.transform.translation.x = X[0];
-        boat_tf.transform.translation.y = X[1];
-        q.setRPY(0.0, 0.0, X[2]);
-        tf::quaternionTFToMsg(q, boat_tf.transform.rotation);
-        tf_broadcaster.sendTransform(boat_tf);
-
         // Visualization Message
         marker.header.stamp = ros::Time();
+        marker.pose.position.x = X[0];
+        marker.pose.position.y = X[1];
+        q.setRPY(0.0, 0.0, X[2]);
+        tf::quaternionTFToMsg(q, marker.pose.orientation);
         visualization_publisher.publish(marker);
 
         // Loop Rate
