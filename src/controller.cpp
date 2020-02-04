@@ -1,102 +1,77 @@
 #include "ros/ros.h"
-#include "std_msgs/Float64.h"
-#include <unistd.h>
-#include "geometry_msgs/Twist.h"
-#include <iostream>
+#include "tf/tf.h"
+
+#include "eigen3/Eigen/Dense"
+#include <stdlib.h>
 #include <math.h>
-#include "std_srvs/Trigger.h"
-#include <vector>
-#include "std_msgs/String.h"
-#include "geometry_msgs/PoseStamped.h"
+
+#include "std_msgs/Float64.h"
+
 #include "geometry_msgs/PointStamped.h"
 #include "geometry_msgs/TwistStamped.h"
-#include "geometry_msgs/PoseWithCovarianceStamped.h"
-#include "geometry_msgs/Twist.h"
-#include <visualization_msgs/Marker.h>
-#include "tf/tf.h"
-#include "eigen3/Eigen/Dense"
-#include "std_msgs/Float64MultiArray.h"
 #include <geometry_msgs/AccelStamped.h>
-using namespace std; 
 
-double theta, posx, posy; 
-double kp, kd; 
+#include "geometry_msgs/Twist.h" // Maybe to transform into a TwistStamped
+#include "geometry_msgs/PoseWithCovarianceStamped.h"
+#include <visualization_msgs/Marker.h>
 
-
+// State Vector and position
 Eigen::Vector4d X = {0.0, 0.0, 0.0, 0.0};
+Eigen::Vector2d u;
+double theta = 0;
 Eigen::Vector2d w = {5, 5}; 
 Eigen::Vector2d dw = {0, 0}; 
-Eigen::Vector2d ddw = {0, 0}; 
+Eigen::Vector2d ddw = {0, 0};
 
+// Coefficients
+double kp = 1.0, kd = 1.0; 
 
-
-void stateCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
-{
-    
+void stateCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg) {
     X[0] = msg->pose.pose.position.x;
     X[1] = msg->pose.pose.position.y;
-
 }
 
-void velocityCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
-{
-    
+void velocityCallback(const geometry_msgs::TwistStamped::ConstPtr& msg) {
     double vx = msg->twist.linear.x;
     double vy = msg->twist.linear.y;
     X[3] = std::sqrt(vx*vx + vy*vy);
 }
 
-void yawCallback(const std_msgs::Float64::ConstPtr& msg)
-{
-        X[2] = msg -> data;
-
+void yawCallback(const std_msgs::Float64::ConstPtr& msg) {
+    X[2] = msg -> data;
 }
 
-void positionCallback(const geometry_msgs::PointStamped::ConstPtr& msg)
-{
+void positionCallback(const geometry_msgs::PointStamped::ConstPtr& msg) {
     w[0] = msg->point.x;
     w[1] = msg->point.y;
-
 }
 
-void speedCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
-{
+void speedCallback(const geometry_msgs::TwistStamped::ConstPtr& msg) {
     dw[0] = msg->twist.linear.x;
     dw[1] = msg->twist.linear.y;
-
 }
 
-void accelerationCallback(const geometry_msgs::AccelStamped::ConstPtr& msg)
-{
+void accelerationCallback(const geometry_msgs::AccelStamped::ConstPtr& msg) {
     ddw[0] = msg->accel.linear.x;
     ddw[1] = msg->accel.linear.y;
-
 }
 
-void gainCallback(const geometry_msgs::Twist::ConstPtr& msg)
-{
-    double u, v;
-    u = msg->linear.x;
-    v = msg->angular.z;
-    kp = u; 
-    kd = v; 
+void gainCallback(const geometry_msgs::Twist::ConstPtr& msg) {
+    kp = msg->linear.x;
+    kd = msg->angular.z;
     ROS_WARN("kp %f", kp);
     ROS_WARN("kd %f", kd);
-    
-
-
-    //ROS_WARN("message x : %f", u);
-
 }
 
+void command(Eigen::Vector2d &u) {
+    // Return the tresholded command between 0 and 255 for sending pwm on motors
+    u[0] = std::max(255 / (1 + std::exp(-u[0])), 0.0);
+    u[1] = std::max(255 / (1+ std::exp(-u[1])), 0.0);
+}
 
-
-void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u)
-{   
+void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u) {   
     double x = X[0]; 
     double y = X[1];
-
-    //ROS_WARN("x : %f", x);
     double theta = X[2];
     double v = X[3];
 
@@ -113,16 +88,20 @@ void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u)
     Eigen::Vector2d a = {1, 2};
     Eigen::Vector2d b = {2, 3};
     Eigen::Vector2d z;
+
     z = 2*(w - Y) + 2*(dw - dY);
     // z = kp*(w - Y) + kd*(dw - dY)+ddw;
-    u = A.fullPivLu().solve(z - B);
-    if(u[0] < 0){u[0] = 0;}
-    if(u[1] < 0){u[1] = 0;}
 
+    // Preventing the singularity of A
+    if (std::abs(A.determinant()) < 0.001) {
+        u = {50.0, 50.0};
+    }
+    else {
+        u = A.fullPivLu().solve(z - B);
+        command(u);
+    }
     
 }
-
-
 
 int main(int argc, char **argv)
 {   
@@ -148,7 +127,7 @@ int main(int argc, char **argv)
     
     ros::Rate loop_rate(25);
     
-    Eigen::Vector2d u; 
+
     
 
     while (ros::ok())

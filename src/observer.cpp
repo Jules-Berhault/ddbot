@@ -30,18 +30,11 @@ void kalman(Eigen::Vector3d& x0, Eigen::Matrix3d& Gx0, Eigen::Vector2d& u, Eigen
 }
 
 // Vectors of the system
-Eigen::Vector3d X = {0.0, 0.0, 0.0};
-Eigen::Vector3d Y = {0.0, 0.0, 0.0};
-Eigen::Vector2d u = {0.0, 0.0};
+double h = 1/10;
 double theta = 0.0;
-
-void u1_Callback(const std_msgs::Float64::ConstPtr& msg){
-    u[0] = msg->data;
-}
-
-void u2_Callback(const std_msgs::Float64::ConstPtr& msg){
-    u[1] = msg->data;
-}
+Eigen::Vector3d X = {0.0, 0.0};
+Eigen::Vector3d Y = {0.0, 0.0};
+Eigen::Vector2d u = {0.0, 0.0};
 
 void yaw_Callback(const std_msgs::Float64::ConstPtr& msg){
     theta = msg->data;
@@ -89,7 +82,6 @@ int main(int argc, char **argv){
 
     // Loop rate
     ros::Rate loop_rate(10.);
-    double h = 1/10;
 
     while (ros::ok()){
         // Loop rate
