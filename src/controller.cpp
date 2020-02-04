@@ -15,6 +15,7 @@
 #include "tf/tf.h"
 #include "eigen3/Eigen/Dense"
 #include "std_msgs/Float64MultiArray.h"
+#include <geometry_msgs/AccelStamped.h>
 using namespace std; 
 
 double theta, posx, posy; 
@@ -23,7 +24,8 @@ double kp, kd;
 
 Eigen::Vector4d X = {0.0, 0.0, 0.0, 0.0};
 Eigen::Vector2d w = {5, 5}; 
-    Eigen::Vector2d dw = {0, 0}; 
+Eigen::Vector2d dw = {0, 0}; 
+Eigen::Vector2d ddw = {0, 0}; 
 
 void infosCallback(const std_msgs::Float64MultiArray::ConstPtr& msg)
 {
@@ -45,6 +47,13 @@ void speedCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
 {
     dw[0] = msg->twist.linear.x;
     dw[1] = msg->twist.linear.y;
+
+}
+
+void accelerationCallback(const geometry_msgs::AccelStamped::ConstPtr& msg)
+{
+    ddw[0] = msg->accel.linear.x;
+    ddw[1] = msg->accel.linear.y;
 
 }
 
@@ -89,7 +98,7 @@ void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u)
     Eigen::Vector2d b = {2, 3};
     Eigen::Vector2d z;
     // z = 2*(w - Y) + 2*(dw - dY);
-    z = kp*(w - Y) + kd*(dw - dY);
+    z = kp*(w - Y) + kd*(dw - dY)+ddw;
     u = A.fullPivLu().solve(z - B);
     if(u[0] < 0){u[0] = 0;}
     if(u[1] < 0){u[1] = 0;}
@@ -105,6 +114,7 @@ int main(int argc, char **argv)
     ros::Subscriber state_suscribe = n.subscribe("state", 1000, &infosCallback);
     ros::Subscriber wanted_suscribe = n.subscribe("wanted_position", 1000, &positionCallback);
     ros::Subscriber wanted_speed_suscribe = n.subscribe("wanted_speed", 1000, &speedCallback);
+    ros::Subscriber wanted_speed_suscribe = n.subscribe("wanted_acceleration", 1000, &accelerationCallback);
     ros::Subscriber test = n.subscribe("/cmd_vel", 1000, &testCallback);
     
     ros::Publisher u1_pub = n.advertise<std_msgs::Float64>("u1", 10);
