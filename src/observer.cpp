@@ -1,6 +1,6 @@
 #include "ros/ros.h"
 #include "tf/tf.h"
-#include "eigen3/Eigen/Dense"
+#include <eigen3/Eigen/Dense>
 #include "stdlib.h"
 #include "cmath"
 
@@ -9,11 +9,11 @@
 #include "geometry_msgs/TwistStamped.h"
 #include "geometry_msgs/PoseStamped.h"
 
-
-void kalman_predict(Eigen::Vector3d& x1, Eigen::Matrix3d& Gx1, Eigen::Vector3d& xup, Eigen::Matrix3d& Gup, Eigen::Vector2d& u, Eigen::Matrix3d& Galpha, Eigen::Matrix3d& A) {
+void kalman_predict(Eigen::Vector3d& x1, Eigen::Matrix3d& Gx1, Eigen::Vector3d& xup, Eigen::Matrix3d& Gup, Eigen::Vector2d& u, Eigen::Matrix3d& Galpha, Eigen::Matrix3d& A,  Eigen::MatrixXd& B) {
     Gx1 = A * Gup * A.transpose() + Galpha;
-    x1 = A * xup + u;
+    x1 = A * xup + B * u;
 }
+
 
 void kalman_correct(Eigen::Vector3d&xup, Eigen::Matrix3d& Gup, Eigen::Vector3d& x0, Eigen::Matrix3d& Gx0, Eigen::Vector3d& y, Eigen::Matrix3d& Gbeta, Eigen::Matrix3d& C) {
     Eigen::MatrixXd S = C * Gx0 * C.transpose() + Gbeta;
@@ -23,11 +23,11 @@ void kalman_correct(Eigen::Vector3d&xup, Eigen::Matrix3d& Gup, Eigen::Vector3d& 
     xup = x0 + K * ytilde;
 }
 
-void kalman(Eigen::Vector3d& x0, Eigen::Matrix3d& Gx0, Eigen::Vector2d& u, Eigen::Matrix3d& Galpha, Eigen::Matrix3d& A, Eigen::Vector3d& y, Eigen::Matrix3d& Gbeta, Eigen::Matrix3d& C) {
+void kalman(Eigen::Vector3d& x0, Eigen::Matrix3d& Gx0, Eigen::Vector2d& u, Eigen::Matrix3d& Galpha, Eigen::Matrix3d& A, Eigen::Vector3d& y, Eigen::Matrix3d& Gbeta, Eigen::Matrix3d& C, Eigen::MatrixXd& B) {
     Eigen::Vector3d xup;
     Eigen::Matrix3d Gup;
     kalman_correct(xup, Gup, x0, Gx0, y, Gbeta, C);
-    kalman_predict(x0, Gx0, xup, Gup, u, Galpha, A);
+    kalman_predict(x0, Gx0, xup, Gup, u, Galpha, A, B);
 }
 
 // Vectors of the system
@@ -98,7 +98,7 @@ int main(int argc, char **argv){
 
         // Kalman Filtering
         A << 1, 0, h * cos(theta), 0, 1, h * sin(theta), 0, 0, 1 - h * abs(theta);
-        kalman(X, Gx, u, Galpha, A, Y, Gbeta, C);
+        kalman(X, Gx, u, Galpha, A, Y, Gbeta, C, B);
 
         // State Message
         state.pose.pose.position.x = X[0];
