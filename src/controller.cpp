@@ -131,8 +131,6 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
     
     //Suscriber
-    
-    
     ros::Subscriber wanted_suscribe = n.subscribe("wanted_position", 1000, &positionCallback);
     ros::Subscriber wanted_speed_suscribe = n.subscribe("wanted_speed", 1000, &speedCallback);
     ros::Subscriber wanted_acceleration_suscribe = n.subscribe("wanted_acceleration", 1000, &accelerationCallback);
@@ -142,7 +140,6 @@ int main(int argc, char **argv)
     ros::Subscriber yaw_subscribe = n.subscribe("yaw", 1000, &yawCallback);
     
     //Publisher
-    
     ros::Publisher u1_pub = n.advertise<std_msgs::Float64>("u1", 10);
     ros::Publisher u2_pub = n.advertise<std_msgs::Float64>("u2", 10);
     
@@ -156,19 +153,13 @@ int main(int argc, char **argv)
 
     while (ros::ok())
     {
-        
         control(w, dw, u);
-
-        
         u1.data = u[0];
         u2.data = u[1];
-
         u1_pub.publish(u1);
         u2_pub.publish(u2);
-
         ros::spinOnce();
         loop_rate.sleep();
-        
     }
 
 
