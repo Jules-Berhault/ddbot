@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
     ros::Publisher speed_publisher = n.advertise<geometry_msgs::TwistStamped>("wanted_speed", 0);
     ros::Publisher acceleration_publisher = n.advertise<geometry_msgs::AccelStamped>("wanted_acceleration", 0);
     tf2_ros::TransformBroadcaster tf_broadcaster;
-    ros::Publisher visualization_publisher = n.advertise<visualization_msgs::Marker>("/target_marker", 0);
+    ros::Publisher visualization_publisher = n.advertise<visualization_msgs::Marker>("target_marker", 0);
 
     // Visualization Message
     visualization_msgs::Marker marker;

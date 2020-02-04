@@ -4,7 +4,7 @@
 #include "eigen3/Eigen/Dense"
 
 #include "std_msgs/Float64.h"
-#include "geometry_msgs/PoseStamped.h"
+#include "geometry_msgs/PointStamped.h"
 #include "geometry_msgs/TwistStamped.h"
 #include <geometry_msgs/TransformStamped.h>
 
@@ -38,8 +38,8 @@ int main(int argc, char **argv) {
     std::string ns = ros::this_node::getNamespace();
 
     // Publisher
-    ros::Publisher visualization_publisher = n.advertise<visualization_msgs::Marker>("visualization_marker", 1000);
-    ros::Publisher state_publisher = n.advertise<geometry_msgs::PoseStamped>("state", 1000);
+    ros::Publisher visualization_publisher = n.advertise<visualization_msgs::Marker>("boat_marker", 1000);
+    ros::Publisher state_publisher = n.advertise<geometry_msgs::PointStamped>("cartesian_coordinates", 1000);
     ros::Publisher speed_publisher = n.advertise<geometry_msgs::TwistStamped>("vel",1000);
     ros::Publisher yaw_publisher = n.advertise<std_msgs::Float64>("cap",1000);
     tf2_ros::TransformBroadcaster tf_broadcaster;
@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
     boat_tf.transform.translation.z = 0;
 
     // State Message
-    geometry_msgs::PoseStamped state;
+    geometry_msgs::PointStamped state;
     state.header.frame_id = "map";
 
     // Velocity Message
@@ -108,8 +108,8 @@ int main(int argc, char **argv) {
         
         // State message
         state.header.stamp = ros::Time::now();
-        state.pose.position.x = X[0];
-        state.pose.position.y = X[1];
+        state.point.x = X[0];
+        state.point.y = X[1];
         state_publisher.publish(state);
 
         // Velocity

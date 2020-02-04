@@ -76,7 +76,7 @@ int main(int argc, char **argv){
     ros::Publisher state_publisher = n.advertise<geometry_msgs::PoseWithCovarianceStamped>("state", 0);
     ros::Subscriber u1_subscriber = n.subscribe("u1", 1000, u1_Callback);
     ros::Subscriber u2_subscriber = n.subscribe("u2", 1000, u2_Callback);
-    ros::Subscriber yaw_subscriber = n.subscribe("yaw", 1000, yaw_Callback);
+    ros::Subscriber yaw_subscriber = n.subscribe("cap", 1000, yaw_Callback);
     ros::Subscriber cartesian_subscriber = n.subscribe("cartesian_coordinates", 1000, cartesian_Callback);
     ros::Subscriber velocity_subscriber = n.subscribe("vel", 1000, velocity_Callback);
 
