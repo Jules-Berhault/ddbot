@@ -29,8 +29,8 @@ int main(int argc, char **argv) {
     ros::Subscriber nmea_subscriber = n.subscribe("nmea_coordinates", 1000, nmea_Callback);
 
     // Reference point for nmea projection in parameter
-    nmea_reference[0] = n_private.param<double>("reference_latitude", 48.199334);
-    nmea_reference[1] = n_private.param<double>("reference_longitude", -3.015625);
+    nmea_reference[0] = n_private.param<double>("reference_latitude", 48.199312);
+    nmea_reference[1] = n_private.param<double>("reference_longitude", -3.015426);
 
     // Coordinate position message
     geometry_msgs::PointStamped cartesian_point;
