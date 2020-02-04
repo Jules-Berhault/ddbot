@@ -26,14 +26,10 @@ void u1_Callback(const std_msgs::Float64::ConstPtr& msg){
     u[0] = msg->data;
 }
 
-<<<<<<< HEAD
-=======
 void u2_Callback(const std_msgs::Float64::ConstPtr& msg){
     u[1] = msg->data;
 }
 
-
->>>>>>> 6684e17edff5b8c2facebbfe1cbba3e530608e6f
 void integration_euler(Eigen::Vector4d &X, Eigen::Vector2d &u, double h) {
     Eigen::Vector4d dX = {X[3]*cos(X[2]), X[3]*sin(X[2]), u[0] - u[1], u[0] + u[1] - abs(X[3])*X[3]};
     X = X + h*dX;
