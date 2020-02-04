@@ -14,7 +14,6 @@ void kalman_predict(Eigen::Vector3d& x1, Eigen::Matrix3d& Gx1, Eigen::Vector3d& 
     x1 = A * xup + B * u;
 }
 
-
 void kalman_correct(Eigen::Vector3d&xup, Eigen::Matrix3d& Gup, Eigen::Vector3d& x0, Eigen::Matrix3d& Gx0, Eigen::Vector3d& y, Eigen::Matrix3d& Gbeta, Eigen::Matrix3d& C) {
     Eigen::MatrixXd S = C * Gx0 * C.transpose() + Gbeta;
     Eigen::MatrixXd K = Gx0 * C.transpose() * S.inverse();
@@ -103,7 +102,7 @@ int main(int argc, char **argv){
         // State Message
         state.pose.pose.position.x = X[0];
         state.pose.pose.position.y = X[1];
-        q.setRPY(0, 0, X[2]);
+        q.setRPY(0, 0, theta);
         tf::quaternionTFToMsg(q, state.pose.pose.orientation);
         state_publisher.publish(state);
 
