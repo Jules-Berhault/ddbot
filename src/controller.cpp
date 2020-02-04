@@ -91,6 +91,8 @@ void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u)
     // z = 2*(w - Y) + 2*(dw - dY);
     z = kp*(w - Y) + kd*(dw - dY);
     u = A.fullPivLu().solve(z - B);
+    if(u[0] < 0){u[0] = 0;}
+    if(u[1] < 0){u[1] = 0;}
 }
 
 
