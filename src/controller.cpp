@@ -136,16 +136,12 @@ int main(int argc, char **argv)
     ros::Subscriber wanted_suscribe = n.subscribe("wanted_position", 1000, &positionCallback);
     ros::Subscriber wanted_speed_suscribe = n.subscribe("wanted_speed", 1000, &speedCallback);
     ros::Subscriber wanted_acceleration_suscribe = n.subscribe("wanted_acceleration", 1000, &accelerationCallback);
-<<<<<<< HEAD
     ros::Subscriber gains_suscribe = n.subscribe("/cmd_vel", 1000, &gainCallback);
-    ros::Subscriber state_subscribe = n.subscribe("state", 1000, stateCallback);
-    ros::Subscriber velocity_subscribe = n.subscribe("vel", 1000, velocityCallback);
-    ros::Subscriber yaw_subscribe = n.subscribe("yaw", 1000, yawCallback);
+    ros::Subscriber state_subscribe = n.subscribe("state", 1000, &stateCallback);
+    ros::Subscriber velocity_subscribe = n.subscribe("vel", 1000, &velocityCallback);
+    ros::Subscriber yaw_subscribe = n.subscribe("yaw", 1000, &yawCallback);
     
     //Publisher
-=======
-    ros::Subscriber test = n.subscribe("/cmd_vel", 1000, &testCallback);
->>>>>>> 5b7b31d374fafc33f04c23d5f539501fb588c4d2
     
     ros::Publisher u1_pub = n.advertise<std_msgs::Float64>("u1", 10);
     ros::Publisher u2_pub = n.advertise<std_msgs::Float64>("u2", 10);
