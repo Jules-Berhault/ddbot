@@ -47,9 +47,9 @@ void yaw_Callback(const std_msgs::Float64::ConstPtr& msg){
     theta = msg->data;
 }
 
-void cartesian_Callback(const geometry_msgs::PoseStamped::ConstPtr& msg){
-    Y[0] = msg->pose.position.x;
-    Y[1] = msg->pose.position.y;
+void cartesian_Callback(const geometry_msgs::PointStamped::ConstPtr& msg){
+    Y[0] = msg->point.x;
+    Y[1] = msg->point.y;
 }
 
 void velocity_Callback(const geometry_msgs::TwistStamped::ConstPtr& msg){
