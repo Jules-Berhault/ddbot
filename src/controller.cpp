@@ -114,7 +114,7 @@ int main(int argc, char **argv)
     ros::Subscriber state_suscribe = n.subscribe("state", 1000, &infosCallback);
     ros::Subscriber wanted_suscribe = n.subscribe("wanted_position", 1000, &positionCallback);
     ros::Subscriber wanted_speed_suscribe = n.subscribe("wanted_speed", 1000, &speedCallback);
-    ros::Subscriber wanted_speed_suscribe = n.subscribe("wanted_acceleration", 1000, &accelerationCallback);
+    ros::Subscriber wanted_acceleration_suscribe = n.subscribe("wanted_acceleration", 1000, &accelerationCallback);
     ros::Subscriber test = n.subscribe("/cmd_vel", 1000, &testCallback);
     
     ros::Publisher u1_pub = n.advertise<std_msgs::Float64>("u1", 10);
