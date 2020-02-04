@@ -27,7 +27,7 @@ include_directories(${Eigen3_INCLUDE_DIRS})
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
+catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -173,6 +173,10 @@ target_link_libraries(compass_node ${catkin_LIBRARIES})
 ## in contrast to setup.py, you can choose the destination
 # install(PROGRAMS
 #   scripts/my_python_script
+    scripts/nmea_serial_driver
+    scripts/nmea_socket_driver
+    scripts/nmea_topic_driver
+    scripts/nmea_topic_serial_reader
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 
@@ -190,12 +194,16 @@ target_link_libraries(compass_node ${catkin_LIBRARIES})
 #   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 # )
 
-## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+install(DIRECTORY launch/
+   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+   FILES_MATCHING PATTERN "*.launch"
+)
+
+if (CATKIN_ENABLE_TESTING)
+  find_package(roslint)
+  roslint_python()
+  roslint_add_test()
+endif
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
