@@ -14,8 +14,8 @@
 
 #include <stdlib.h>
 
-double Lx = 25;
-double Ly = 10;
+double Lx = 30;
+double Ly = 15;
 double omega = 0.1;
 
 Eigen::Vector2d wanted_position = {0.0, 0.0};
