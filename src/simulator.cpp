@@ -31,11 +31,10 @@ void integration_euler(Eigen::Vector4d &X, Eigen::Vector2d &u, double h) {
 
 int main(int argc, char **argv) {
     // ROS Node declaration
-    ros::init(argc, argv, "simulator_node");//test
+    ros::init(argc, argv, "simulator_node");
     ros::NodeHandle n;
     ros::NodeHandle n_private("~");
-    std::string ns = ros::this_node::getNamespace();
-
+    
     // Publisher
     ros::Publisher visualization_publisher = n.advertise<visualization_msgs::Marker>("boat_marker", 1000);
     ros::Publisher state_publisher = n.advertise<geometry_msgs::PointStamped>("cartesian_coordinates", 1000);
@@ -71,7 +70,6 @@ int main(int argc, char **argv) {
     // Visualization Message
     visualization_msgs::Marker marker;
     marker.header.frame_id = "map";
-    marker.ns = ns;
     marker.id = 0;
     marker.type = visualization_msgs::Marker::MESH_RESOURCE;
     marker.action = visualization_msgs::Marker::ADD;
