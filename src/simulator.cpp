@@ -17,11 +17,6 @@
 Eigen::Vector2d u ={0.0, 0.0};
 Eigen::Vector4d X = {0.0, 0.0, 0.0, 0.0};
 
-/* void commande_Callback(const geometry_msgs::Twist::ConstPtr& msg){
-    u[0] = msg->linear.x;
-    u[1] = msg->linear.y;
-} */
-
 void u1_Callback(const std_msgs::Float64::ConstPtr& msg){
     u[0] = msg->data;
 }
