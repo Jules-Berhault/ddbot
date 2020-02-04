@@ -1,15 +1,15 @@
 #include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "std_msgs/Float64.h"
-#include "math.h"
-#include "std_srvs/Trigger.h"
-#include "string"
-#include <string>
-#include <iostream>
-#include <iostream>
-#include <iomanip>
+#include <math.h>
 #include <stdio.h>
 #include <unistd.h>
+
+#include <string>
+#include <iostream>
+#include <iomanip>
+
+#include "std_msgs/String.h"
+#include "std_msgs/Float64.h"
+#include "std_srvs/Trigger.h"
 
 int main(int argc, char **argv) {
 	FILE *lsofFile_p = popen("~/cpp/Driver_IMU/minimu9-ahrs --output euler", "r");
@@ -17,9 +17,14 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
+	// Node declaration
 	ros::init(argc, argv, "Node_cap");
 	ros::NodeHandle n;
+
+	// Publisher
 	ros::Publisher chatter_pub = n.advertise<std_msgs::Float64>("cap", 1000);
+
+	// Rate Loop
 	ros::Rate loop_rate(2500);
 
 	while (ros::ok()) {
