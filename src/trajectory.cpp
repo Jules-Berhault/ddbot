@@ -84,10 +84,7 @@ int main(int argc, char **argv) {
     
     // Setting the gaussian noise
 
-    const double mean = 0.0;
-    const double stddev = 1;
-    std::default_random_engine generator;
-    std::normal_distribution<double> dist(mean, stddev);
+    
 
     // Loop 
     while (ros::ok()) {
@@ -101,8 +98,8 @@ int main(int argc, char **argv) {
         acceleration(wanted_acceleration, t);
 
         // Wanted position message
-        w_point.point.x = wanted_position[0] + dist(generator);
-        w_point.point.y = wanted_position[1] + dist(generator);
+        w_point.point.x = wanted_position[0];
+        w_point.point.y = wanted_position[1];
         position_publisher.publish(w_point);
 
         // Wanted speed message
