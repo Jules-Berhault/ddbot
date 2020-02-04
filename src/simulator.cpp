@@ -17,11 +17,18 @@
 Eigen::Vector2d u ={0.0, 0.0};
 Eigen::Vector4d X = {0.0, 0.0, 0.0, 0.0};
 
-void commande_Callback(const geometry_msgs::Twist::ConstPtr& msg){
+/* void commande_Callback(const geometry_msgs::Twist::ConstPtr& msg){
     u[0] = msg->linear.x;
     u[1] = msg->linear.y;
+} */
+
+void u1_Callback(const std_msgs::Float64::ConstPtr& msg){
+    u[0] = msg->data;
 }
 
+void u2_Callback(const std_msgs::Float64::ConstPtr& msg){
+    u[1] = msg->data;
+}
 
 
 void integration_euler(Eigen::Vector4d &X, Eigen::Vector2d &u, double h) {
@@ -39,7 +46,9 @@ int main(int argc, char **argv) {
     // Publisher and subscriber definition
     ros::Publisher visualization_publisher = n.advertise<visualization_msgs::Marker>("/visualization_marker", 0);
     ros::Publisher state_publisher = n.advertise<std_msgs::Float64MultiArray>("state", 0);
-    ros::Subscriber u1_subscriber = n.subscribe("commande", 1000, commande_Callback);
+    //ros::Subscriber u1_subscriber = n.subscribe("commande", 1000, commande_Callback);
+    ros::Subscriber u1_subscriber = n.subscribe("u1", 1000, u1_Callback);
+    ros::Subscriber u2_subscriber = n.subscribe("u2", 1000, u2_Callback);
     tf2_ros::TransformBroadcaster tf_broadcaster;
 
     // Parameters

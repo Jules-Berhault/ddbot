@@ -105,9 +105,11 @@ int main(int argc, char **argv)
     ros::Subscriber wanted_speed_suscribe = n.subscribe("wanted_speed", 1000, &speedCallback);
     ros::Subscriber test = n.subscribe("/cmd_vel", 1000, &testCallback);
     
-    ros::Publisher pub = n.advertise<geometry_msgs::Twist>("commande", 10);
+    ros::Publisher u1_pub = n.advertise<std_msgs::Float64>("u1", 10);
+    ros::Publisher u2_pub = n.advertise<std_msgs::Float64>("u2", 10);
     
-    geometry_msgs::Twist command_u;
+    std_msgs::Float64 u1;
+    std_msgs::Float64 u2;
     
     ros::Rate loop_rate(25);
     
@@ -120,10 +122,12 @@ int main(int argc, char **argv)
         control(w, dw, u);
 
         
-        command_u.linear.x = u[0];
-        command_u.linear.y = u[1];
+        u1.data = u[0];
+        u2.data = u[1];
 
-        pub.publish(command_u);
+        u1_pub.publish(u1);
+        u2_pub.publish(u2);
+
         ros::spinOnce();
         loop_rate.sleep();
         
