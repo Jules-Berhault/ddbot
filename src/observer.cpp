@@ -102,7 +102,7 @@ int main(int argc, char **argv){
         // State Message
         state.pose.pose.position.x = X[0];
         state.pose.pose.position.y = X[1];
-        q.setRPY(0, 0, X[2]);
+        q.setRPY(0, 0, theta);
         tf::quaternionTFToMsg(q, state.pose.pose.orientation);
         state_publisher.publish(state);
 
