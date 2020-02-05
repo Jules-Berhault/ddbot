@@ -26,15 +26,20 @@ Eigen::Vector2d ddw = {0, 0};
 // Coefficients
 double kp = 1.0, kd = 1.0; 
 
-void stateCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg) {
-    X[0] = msg->pose.pose.position.x;
-    X[1] = msg->pose.pose.position.y;
-}
+
+void stateCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
+{
+    
+    X[0] = msg->pose.position.x;
+    
+    X[1] = msg->pose.position.y;
+
+} 
 
 void velocityCallback(const geometry_msgs::TwistStamped::ConstPtr& msg) {
     double vx = msg->twist.linear.x;
     double vy = msg->twist.linear.y;
-    X[3] = std::sqrt(vx*vx + vy*vy);
+    X[3] = std::sqrt(vx*vx +vy*vy);
 }
 
 void yawCallback(const std_msgs::Float64::ConstPtr& msg) {
@@ -115,8 +120,9 @@ int main(int argc, char **argv)
     ros::Subscriber wanted_acceleration_suscribe = n.subscribe("wanted_acceleration", 1000, &accelerationCallback);
     ros::Subscriber gains_suscribe = n.subscribe("/cmd_vel", 1000, &gainCallback);
     ros::Subscriber state_subscribe = n.subscribe("state", 1000, &stateCallback);
+    //ros::Subscriber rstate_subscribe = n.subscribe("cartesian_coordinates", 1000, &rstateCallback);
     ros::Subscriber velocity_subscribe = n.subscribe("vel", 1000, &velocityCallback);
-    ros::Subscriber yaw_subscribe = n.subscribe("yaw", 1000, &yawCallback);
+    ros::Subscriber yaw_subscribe = n.subscribe("cap", 1000, &yawCallback);
     
     //Publisher
     ros::Publisher u1_pub = n.advertise<std_msgs::Float64>("u1", 10);
@@ -129,7 +135,6 @@ int main(int argc, char **argv)
     
 
     
-
     while (ros::ok())
     {
         control(w, dw, u);
