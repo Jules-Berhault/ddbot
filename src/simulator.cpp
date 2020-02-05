@@ -17,11 +17,11 @@ Eigen::Vector2d u = {0.0, 0.0};
 Eigen::Vector4d X = {0.0, 0.0, 0.0, 0.0};
 
 void u1_Callback(const std_msgs::Float64::ConstPtr& msg){
-    u[0] = msg->data;
+    u[0] = msg->data/150.;
 }
 
 void u2_Callback(const std_msgs::Float64::ConstPtr& msg){
-    u[1] = msg->data;
+    u[1] = msg->data/150.;
 }
 
 void integration_euler(Eigen::Vector4d &X, Eigen::Vector2d &u, double h) {
@@ -40,6 +40,8 @@ int main(int argc, char **argv) {
     ros::Publisher state_publisher = n.advertise<geometry_msgs::PointStamped>("cartesian_coordinates", 1000);
     ros::Publisher speed_publisher = n.advertise<geometry_msgs::TwistStamped>("vel",1000);
     ros::Publisher yaw_publisher = n.advertise<std_msgs::Float64>("cap",1000);
+    
+    
 
     // Subscriber
     ros::Subscriber u1_subscriber = n.subscribe("u1", 1000, u1_Callback);
@@ -62,7 +64,9 @@ int main(int argc, char **argv) {
     velocity.header.frame_id = "map";
 
     // Yaw Message
+    
     std_msgs::Float64 theta;
+
 
     // Quaternion
     tf::Quaternion q;
@@ -91,6 +95,9 @@ int main(int argc, char **argv) {
         // Getting the incomming messages
         ros::spinOnce();
 
+        /* u[0] =1; 
+        u[1] = 1.1; */
+
         // Simulating the state of the boat
         integration_euler(X, u, h);
         
@@ -104,6 +111,7 @@ int main(int argc, char **argv) {
         velocity.header.stamp = ros::Time::now();
         velocity.twist.linear.x = X[3]*std::cos(X[2]);
         velocity.twist.linear.y = X[3]*std::sin(X[2]);
+        velocity.twist.linear.z = X[3];
         speed_publisher.publish(velocity);
 
         // Yaw Message

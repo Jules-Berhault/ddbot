@@ -7,8 +7,7 @@
 	<arg name="time_ref_source" default="gps" />
 	<arg name="useRMC" default="False" />
 
-	<node name="simulator" pkg="ddbot" type="simulator_node" />
-	<node name="observer" pkg="ddbot" type="observer_node" />
+	<node name="kalman_node" pkg="ddbot" type="kalman.py" />
 	<node name="controller" pkg="ddbot" type="controller_node" />
 	<node name="trajectory" pkg="ddbot" type="trajectory_node" />
 	<node name="gnss_node" pkg="ddbot" type="nmea_serial_driver" output="screen">
