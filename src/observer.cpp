@@ -30,6 +30,7 @@ void kalman(Eigen::Vector2d& x0, Eigen::Matrix2d& Gx0, Eigen::Vector2d& u, Eigen
 }
 
 // Vectors of the system
+<<<<<<< HEAD
 Eigen::Vector2d X = {0.0, 0.0};
 Eigen::Vector2d Y = {0.0, 0.0};
 Eigen::Vector2d u = {0.0, 0.0};
@@ -37,6 +38,13 @@ double theta = 0.0;
 double v = 0.0;
 double h = 1/10;
 
+=======
+double h = 1/10;
+double theta = 0.0;
+Eigen::Vector3d X = {0.0, 0.0};
+Eigen::Vector3d Y = {0.0, 0.0};
+Eigen::Vector2d u = {0.0, 0.0};
+>>>>>>> 64934c6853660c41c5b743e77c521c1af0dbe402
 
 void yaw_Callback(const std_msgs::Float64::ConstPtr& msg){
     theta = msg->data;
@@ -45,6 +53,13 @@ void yaw_Callback(const std_msgs::Float64::ConstPtr& msg){
 void cartesian_Callback(const geometry_msgs::PointStamped::ConstPtr& msg){
     Y[0] = msg->point.x;
     Y[1] = msg->point.y;
+<<<<<<< HEAD
+=======
+}
+
+void velocity_Callback(const geometry_msgs::TwistStamped::ConstPtr& msg){
+    Y[2] = std::sqrt(std::pow(msg->twist.linear.x, 2) + std::pow(msg->twist.linear.x, 2));
+>>>>>>> 64934c6853660c41c5b743e77c521c1af0dbe402
 }
  void velocity_Callback(const geometry_msgs::TwistStamped::ConstPtr& msg){
     v = std::sqrt(std::pow(msg->twist.linear.x, 2) + std::pow(msg->twist.linear.x, 2));
@@ -86,7 +101,12 @@ int main(int argc, char **argv){
     // A quaternion
     tf::Quaternion q;
 
+<<<<<<< HEAD
     
+=======
+    // Loop rate
+    ros::Rate loop_rate(10.);
+>>>>>>> 64934c6853660c41c5b743e77c521c1af0dbe402
 
     while (ros::ok()){
         // Loop rate
