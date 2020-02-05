@@ -66,8 +66,8 @@ void gainCallback(const geometry_msgs::Twist::ConstPtr& msg) {
 
 void command(Eigen::Vector2d &u) {
     // Return the tresholded command between 0 and 255 for sending pwm on motors
-    u[0] = std::max(255 / (1 + std::exp(-u[0])), 0.0);
-    u[1] = std::max(255 / (1 + std::exp(-u[1])), 0.0);
+    u[0] = std::max(2*255* (1 / (1 + std::exp(-1/50*u[0]) - 0.5)), 0.0);
+    u[1] = std::max(2*255* (1 / (1 + std::exp(-1/50*u[1]) - 0.5)), 0.0);
 }
 
 void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u) {   
