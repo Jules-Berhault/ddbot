@@ -27,13 +27,9 @@ Eigen::Vector2d ddw = {0, 0};
 double kp = 1.0, kd = 1.0; 
 
 
-void stateCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
-{
-    
+void stateCallback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     X[0] = msg->pose.position.x;
-    
     X[1] = msg->pose.position.y;
-
 } 
 
 void velocityCallback(const geometry_msgs::TwistStamped::ConstPtr& msg) {
@@ -104,8 +100,7 @@ void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u) {
     else {
         u = A.fullPivLu().solve(z - B);
         command(u);
-    }
-    
+    } 
 }
 
 int main(int argc, char **argv)
@@ -133,10 +128,7 @@ int main(int argc, char **argv)
     
     ros::Rate loop_rate(25);
     
-
-    
-    while (ros::ok())
-    {
+    while (ros::ok()) {
         control(w, dw, u);
         u1.data = u[0];
         u2.data = u[1];
@@ -145,7 +137,5 @@ int main(int argc, char **argv)
         ros::spinOnce();
         loop_rate.sleep();
     }
-
-
 return 0;
 }
