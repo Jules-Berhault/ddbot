@@ -141,7 +141,7 @@ add_executable(simulator_node src/simulator.cpp)
 add_executable(projection_node src/projection.cpp)
 add_executable(trajectory_node src/trajectory.cpp)
 add_executable(controller_node src/controller.cpp)
-add_executable(observer_node src/observer.cpp)
+#add_executable(observer_node src/observer.cpp)
 add_executable(compass_node src/compass.cpp)
 
 ## Rename C++ executable without prefix
@@ -159,7 +159,7 @@ target_link_libraries(simulator_node ${catkin_LIBRARIES})
 target_link_libraries(projection_node ${catkin_LIBRARIES})
 target_link_libraries(controller_node ${catkin_LIBRARIES})
 target_link_libraries(trajectory_node ${catkin_LIBRARIES})
-target_link_libraries(observer_node ${catkin_LIBRARIES})
+#target_link_libraries(observer_node ${catkin_LIBRARIES})
 target_link_libraries(compass_node ${catkin_LIBRARIES})
 
 #############
