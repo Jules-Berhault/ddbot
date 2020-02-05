@@ -17,11 +17,11 @@ Eigen::Vector2d u = {0.0, 0.0};
 Eigen::Vector4d X = {0.0, 0.0, 0.0, 0.0};
 
 void u1_Callback(const std_msgs::Float64::ConstPtr& msg){
-    u[0] = msg->data;
+    u[0] = msg->data/150.;
 }
 
 void u2_Callback(const std_msgs::Float64::ConstPtr& msg){
-    u[1] = msg->data;
+    u[1] = msg->data/150.;
 }
 
 void integration_euler(Eigen::Vector4d &X, Eigen::Vector2d &u, double h) {
