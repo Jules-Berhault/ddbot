@@ -44,6 +44,8 @@ if __name__ == "__main__" :
     cy = a/2 * sin(2*theta)
     dt = 0.05
     ax = init_figure(-20, 20, -20, 20)
+    
+    
     for t in arange(0, 300, dt):
         clear(ax)
         w, dw = set_point(t)

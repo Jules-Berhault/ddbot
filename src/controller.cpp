@@ -20,7 +20,10 @@
 using namespace std; 
 
 double theta, posx, posy; 
-double kp, kd; 
+double kp = 0;
+double kd = 0;
+
+
 
 
 Eigen::Vector4d X = {0.0, 0.0, 0.0, 0.0};
@@ -30,20 +33,21 @@ Eigen::Vector2d ddw = {0, 0};
 
 
 
-void stateCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
+void stateCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
 {
     
-    X[0] = msg->pose.pose.position.x;
-    X[1] = msg->pose.pose.position.y;
+    X[0] = msg->pose.position.x;
+    
+    X[1] = msg->pose.position.y;
 
-}
+} 
 
 void velocityCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
 {
     
     double vx = msg->twist.linear.x;
     double vy = msg->twist.linear.y;
-    X[3] = std::sqrt(vx*vx + vy*vy);
+    X[3] = std::sqrt(vx*vx +vy*vy);
 }
 
 void yawCallback(const std_msgs::Float64::ConstPtr& msg)
@@ -80,23 +84,12 @@ void gainCallback(const geometry_msgs::Twist::ConstPtr& msg)
     v = msg->angular.z;
     kp = u; 
     kd = v; 
-    ROS_WARN("kp %f", kp);
-    ROS_WARN("kd %f", kd);
-    
-
-
-    //ROS_WARN("message x : %f", u);
-
 }
-
-
 
 void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u)
 {   
     double x = X[0]; 
     double y = X[1];
-
-    //ROS_WARN("x : %f", x);
     double theta = X[2];
     double v = X[3];
 
@@ -113,13 +106,12 @@ void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u)
     Eigen::Vector2d a = {1, 2};
     Eigen::Vector2d b = {2, 3};
     Eigen::Vector2d z;
-    z = 2*(w - Y) + 2*(dw - dY);
-    // z = kp*(w - Y) + kd*(dw - dY)+ddw;
+    z = 1*(w - Y) + 2*(dw - dY) +ddw;
+    //z = kp*(w - Y) + kd*(dw - dY);
+    
     u = A.fullPivLu().solve(z - B);
     if(u[0] < 0){u[0] = 0;}
     if(u[1] < 0){u[1] = 0;}
-
-    
 }
 
 
@@ -136,8 +128,9 @@ int main(int argc, char **argv)
     ros::Subscriber wanted_acceleration_suscribe = n.subscribe("wanted_acceleration", 1000, &accelerationCallback);
     ros::Subscriber gains_suscribe = n.subscribe("/cmd_vel", 1000, &gainCallback);
     ros::Subscriber state_subscribe = n.subscribe("state", 1000, &stateCallback);
+    //ros::Subscriber rstate_subscribe = n.subscribe("cartesian_coordinates", 1000, &rstateCallback);
     ros::Subscriber velocity_subscribe = n.subscribe("vel", 1000, &velocityCallback);
-    ros::Subscriber yaw_subscribe = n.subscribe("yaw", 1000, &yawCallback);
+    ros::Subscriber yaw_subscribe = n.subscribe("cap", 1000, &yawCallback);
     
     //Publisher
     ros::Publisher u1_pub = n.advertise<std_msgs::Float64>("u1", 10);
@@ -150,7 +143,6 @@ int main(int argc, char **argv)
     
     Eigen::Vector2d u; 
     
-
     while (ros::ok())
     {
         control(w, dw, u);

@@ -1,97 +1,104 @@
 #!/usr/bin/env python
+# license removed for brevity
 
-import serial
-import os
-import time
-import struct
+#from roblib import *
+from geometry_msgs.msg import PointStamped, PoseStamped, TwistStamped
+from std_msgs.msg import Float64
+from tf.transformations import quaternion_from_euler
 import rospy
-import std_msgs.msg
-from Encoder_node.msg import Message_encoder
+from numpy.linalg import inv
+from numpy import *
+from matplotlib.pyplot import scatter, show
 
-def set_baudrate(baudrate=115200):
-    st = os.system ("stty -F /dev/ttyUSB0 %d"%(baudrate))
-    print (st)
-    st = os.system ("stty -F /dev/ttyUSB0")
-    print (st)
+theta = 0 
+v = 0
+#X = array([[5, 5, 0.1, 0.]]).T
+u_c = array([[0.8, 0.9]]).T
+freq = 10
+dt = 1/freq
+Y = array([[0, 0]]).T
+Xb = array([[0.1, 0.1]]).T
+Gx = 100*eye(2)
 
-def init_line():
-    ser = serial.Serial('/dev/ttyUSB0',115200,timeout=1.0)
-    time.sleep(1.0)
-    print (ser)
-    return ser
 
-def close_line(ser):
-    ser.close()
+def kalman_predict(xup,Gup,u,lambalpha,A):
+    lamb1 = matmul(matmul(A, Gup), A.T) + lambalpha
+    x1 = matmul(A, xup) + u    
+    return(x1,lamb1)    
 
-def get_sync(ser):
-    while True:
-        c1 = ser.read(1)
-        if ord(c1) == 0xff:
-            c2 = ser.read(1)
-            if ord(c2) == 0x0d:
-                v = ser.read(15)
-                break
+def kalman_correc(x0,lamb0,y,lambbeta,C):
+    
+    S = matmul(matmul(C, lamb0), C.T) + lambbeta        
+    K = matmul(matmul(lamb0,C.T), inv(S))           
+    ytilde = y - matmul(C, x0)        
+    Gup = matmul((eye(len(x0))-matmul(K, C)), lamb0) 
+    xup = x0 + matmul(K,ytilde)
+    return(xup,Gup) 
+    
+def kalman(x0,lamb0,u,y,lambalpha,lambbeta,A,C):
+    xup,Gup = kalman_correc(x0,lamb0,y,lambbeta,C)
+    x1,lamb1=kalman_predict(xup,Gup,u,lambalpha,A)
+    return(x1,lamb1)     
 
-def read_single_packet(debug=True):
-    ser = init_line()
-    get_sync(ser)
-    sync,data = read_packet(ser,debug=debug)
-    close_line(ser)
-    timeAcq = data[0]
-    sensLeft = data[1]
-    sensRight = data[2]
-    posLeft = data[3]
-    posRight = data[4]
-    return sync, timeAcq, sensLeft, sensRight, posLeft, posRight
 
-def read_packet(ser,debug=True):
-    sync = True
-    data = []
-    v=ser.read(17)
-    #print (type(v))
-    #st=""
-    #for i in range(len(v)):
-    #  st += "%2.2x"%(ord(v[i]))
-    #print st
-    c1 = v[0]
-    c2 = v[1]
-    if (c1 != 0xff) or (c2 != 0x0d):
-      if debug:
-          print ("sync lost, exit")
-      sync = False
-    else:
-      timer = (v[2] << 32)
-      timer += (v[3] << 16)
-      timer += (v[4] << 8)
-      timer += v[5]
-      sensLeft = v[7]
-      sensRight= v[6]
-      posLeft = v[10] << 8
-      posLeft += v[11]
-      posRight = v[8] << 8
-      posRight += v[9]
-      voltLeft = v[14] << 8
-      voltLeft += v[15]
-      voltRight = v[12] << 8
-      voltRight += v[13]
-      c3 = v[16]
-      stc3 = "%2.2X"%(c3)
-      data.append(timer)
-      data.append(sensLeft)
-      data.append(sensRight)
-      data.append(posLeft)
-      data.append(posRight)
-      data.append(voltLeft)
-      data.append(voltRight)
-      if debug:
-          print (timer,sensLeft,sensRight,posLeft,posRight,voltLeft,voltRight,stc3)
-    return sync,data
 
-pub = rospy.Publisher('publisher_encoder_topic', Message_encoder, queue_size=10)
-rospy.init_node('publisher_encoder_node')
-r = rospy.Rate(10) # 10hz
+def observateur(theta, v, Y, Xb, Gx, dt):
+    
+    u1 = v*cos(theta)
+    u2 = v*sin(theta)
+    u = dt*array([[u1, u2]]).T
+    A = eye(2)
+    C = eye(2) 
+    Galpha = 10*eye(2)
+    Gbeta = 100*eye(2)
+    Xb, Gx = kalman(Xb, Gx, u, Y, Galpha, Gbeta, A, C)
+    return Xb, Gx
+
+def capCallback(data):
+    theta = data.data
+
+def posCallback(data):
+    Y[0] = data.point.x
+    Y[1] = data.point.y
+
+def  velCallback(data):
+    v = sqrt(data.twist.linear.x**2 + data.twist.linear.y**2)
+
+
+
+""" initialisation du node """
+rospy.init_node('observer_node', anonymous=True)
+
+""" creation subscriber """
+state_publisher = rospy.Publisher('state', PoseStamped, queue_size=10)
+cap_suscriber = rospy.Subscriber('cap', Float64, capCallback)
+pos_suscriber = rospy.Subscriber('cartesian_coordinates', PointStamped, posCallback)
+vel_suscriber = rospy.Subscriber('vel', TwistStamped, velCallback )
+
+state = PoseStamped()
+rate = rospy.Rate(freq) # 25hz
+
 while not rospy.is_shutdown():
-	message_encoder_msg=Message_encoder()
-	message_encoder_msg.sync, message_encoder_msg.timeAcq, message_encoder_msg.sensLeft, message_encoder_msg.sensRight, message_encoder_msg.posLeft, message_encoder_msg.posRight = read_single_packet(debug=True)
-	pub.publish(message_encoder_msg)
-	r.sleep()
+    state.header.stamp = rospy.Time.now()
+    state.header.frame_id = "map"
+
+    #scatter(Y[0], Y[1])
+    
+    Xb, Gx = observateur(theta, v, Y, Xb, Gx, dt)
+    
+    q = quaternion_from_euler(0,0, theta)
+    
+    state.pose.position.x = Xb[0]
+    state.pose.position.y = Xb[1]
+
+    rospy.logwarn("xb : %f,  xvrai : %f" %(Xb[0], Y[0]))
+    rospy.logwarn("yb : %f,  yvrai : %f" %(Xb[1], Y[1]))
+    #rospy.logwarn(" : %f" %Xb[1])
+
+    state.pose.orientation.x = q[0]
+    state.pose.orientation.x = q[1]
+    state.pose.orientation.x = q[2]
+    state.pose.orientation.x = q[3]
+
+    state_publisher.publish(state)
+    rate.sleep()

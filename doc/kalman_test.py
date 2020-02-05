@@ -33,7 +33,7 @@ if __name__ == "__main__" :
     dt = 1
     ax = init_figure(-40, 40, -40, 40)
     
-    Xb = array([[0.1, 0.1]]).T
+    Xb = array([[2, 2]]).T
     Gx = 1000*eye(2)
     
     for t in arange(0, 300, dt):

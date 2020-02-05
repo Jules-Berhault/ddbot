@@ -68,7 +68,7 @@ int main(int argc, char **argv){
     Eigen::Matrix2d Galpha = Eigen::MatrixXd::Zero(2, 2);
     Eigen::Matrix2d Gbeta = 100 * Eigen::MatrixXd::Identity(2, 2);
 
-    Eigen::Matrix2d A = (1+h)*Eigen::MatrixXd::Identity(2, 2);
+    Eigen::Matrix2d A = (1)*Eigen::MatrixXd::Identity(2, 2);
     Eigen::Matrix2d B = Eigen::MatrixXd::Identity(2, 2);
     Eigen::Matrix2d C = Eigen::MatrixXd::Identity(2, 2);
 
@@ -82,8 +82,7 @@ int main(int argc, char **argv){
 
     // Messages
     geometry_msgs::PoseWithCovarianceStamped state;
-    state.header.frame_id = "map";
-
+    
     // A quaternion
     tf::Quaternion q;
 
@@ -91,7 +90,8 @@ int main(int argc, char **argv){
 
     while (ros::ok()){
         // Loop rate
-        
+        state.header.frame_id = "map";
+        state.header.stamp= ros::Time::now();
         ros::spinOnce();
         u = {h*v*std::cos(theta), h*v*std::sin(theta)};
         // Kalman Filtering
