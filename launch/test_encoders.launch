@@ -1,0 +1,5 @@
+<launch>
+<node name="thruster_node" pkg="ddbot" type="thruster.py" />
+<node name="encoders_driver" pkg="ddbot" type="encoders_driver_node" />
+<node name="command_controller" pkg="ddbot" type="command_controller.py" />
+</launch>

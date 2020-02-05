@@ -1,6 +1,6 @@
 #include "ros/ros.h"
 #include "tf/tf.h"
-#include <eigen3/Eigen/Dense>
+/* #include <eigen3/Eigen/Dense> */
 #include "stdlib.h"
 #include "cmath"
 
@@ -9,7 +9,7 @@
 #include "geometry_msgs/TwistStamped.h"
 #include "geometry_msgs/PoseStamped.h"
 
-void kalman_predict(Eigen::Vector3d& x1, Eigen::Matrix3d& Gx1, Eigen::Vector3d& xup, Eigen::Matrix3d& Gup, Eigen::Vector2d& u, Eigen::Matrix3d& Galpha, Eigen::Matrix3d& A,  Eigen::MatrixXd& B) {
+/* void kalman_predict(Eigen::Vector3d& x1, Eigen::Matrix3d& Gx1, Eigen::Vector3d& xup, Eigen::Matrix3d& Gup, Eigen::Vector2d& u, Eigen::Matrix3d& Galpha, Eigen::Matrix3d& A,  Eigen::MatrixXd& B) {
     Gx1 = A * Gup * A.transpose() + Galpha;
     x1 = A * xup + B * u;
 }
@@ -47,10 +47,10 @@ void cartesian_Callback(const geometry_msgs::PointStamped::ConstPtr& msg){
 
 void velocity_Callback(const geometry_msgs::TwistStamped::ConstPtr& msg){
     Y[2] = std::sqrt(std::pow(msg->twist.linear.x, 2) + std::pow(msg->twist.linear.x, 2));
-}
+} */
 
 int main(int argc, char **argv){
-    // Initialisation of the Kalman filter
+    /* // Initialisation of the Kalman filter
     Eigen::Matrix3d Gx = 100 * Eigen::MatrixXd::Identity(3, 3);
     Eigen::Matrix3d Galpha = Eigen::MatrixXd::Zero(3, 3);
     Eigen::Matrix3d Gbeta = 10 * Eigen::MatrixXd::Identity(3, 3);
@@ -80,11 +80,11 @@ int main(int argc, char **argv){
     // A quaternion
     tf::Quaternion q;
 
-    // Loop rate
+    // Loop rate */
     ros::Rate loop_rate(10.);
 
     while (ros::ok()){
-        // Loop rate
+       /*  // Loop rate
         ros::spinOnce();
 
         // Kalman Filtering
@@ -96,7 +96,7 @@ int main(int argc, char **argv){
         state.pose.pose.position.y = X[1];
         q.setRPY(0, 0, theta);
         tf::quaternionTFToMsg(q, state.pose.pose.orientation);
-        state_publisher.publish(state);
+        state_publisher.publish(state); */
 
         loop_rate.sleep();
     }
