@@ -19,7 +19,10 @@
 	<node name="encoder" pkg="ddbot" type="encoders_driver_node" />
 
 	<node name="kalman_node" pkg="ddbot" type="kalman.py" />
-	<node name="controller" pkg="ddbot" type="controller_node" />
+	<node name="controller" pkg="ddbot" type="controller_node">
+		<param name="kp" value="2.0" type="double" />
+		<param name="kd" value="2.0" type="double" />
+	</node>
 	<node name="waypoint" pkg="ddbot" type="waypoint_node">
 		<param name="x0" value="10" type="double"/>
 		<param name="y0" value="-5" type="double"/>
