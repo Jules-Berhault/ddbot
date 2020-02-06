@@ -20,7 +20,7 @@
 
 	<node name="kalman_node" pkg="ddbot" type="kalman.py" />
 	<node name="controller" pkg="ddbot" type="controller_node">
-		<param name="ctype" value="kalman" type="double" />
+		<param name="ctype" value="simple" type="string" />
 		<param name="kp" value="2.0" type="double" />
 		<param name="kd" value="2.0" type="double" />
 	</node>

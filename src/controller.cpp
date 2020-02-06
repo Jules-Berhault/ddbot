@@ -131,7 +131,7 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
     ros::NodeHandle n_private("~");
 
-    std::string controller_type = n_private.param<std::string>("ctype", "kalman");
+    std::string controller_type = n_private.param<std::string>("ctype", "simple");
     
     //Suscriber
     ros::Subscriber wanted_suscribe = n.subscribe("wanted_position", 1000, &positionCallback);
