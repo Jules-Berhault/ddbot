@@ -6,6 +6,7 @@
 #include <math.h>
 
 #include "std_msgs/Float64.h"
+#include "std_msgs/String.h"
 
 #include "geometry_msgs/PointStamped.h"
 #include "geometry_msgs/TwistStamped.h"
@@ -16,17 +17,14 @@
 #include <visualization_msgs/Marker.h>
 
 // State Vector and position
-Eigen::Vector4d X = {0.0, 0.0, 0.0, 0.0};
+Eigen::Vector4d X = {0.0, 0.0, 0.0, 0.1};
 Eigen::Vector2d u;
-double theta = 0;
 Eigen::Vector2d w = {5, 5}; 
 Eigen::Vector2d dw = {0, 0}; 
 Eigen::Vector2d ddw = {0, 0};
 
 // Coefficients
 double kp, kd; 
-
-
 
 void stateCallback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     X[0] = msg->pose.position.x;
@@ -40,7 +38,7 @@ void velocityCallback(const geometry_msgs::TwistStamped::ConstPtr& msg) {
 }
 
 void yawCallback(const std_msgs::Float64::ConstPtr& msg) {
-    X[2] = msg -> data;
+    X[2] = msg -> data*M_PI/180;
 }
 
 void positionCallback(const geometry_msgs::PointStamped::ConstPtr& msg) {
@@ -76,7 +74,7 @@ void command(Eigen::Vector2d &u) {
     u[1] = 255*std::max(2 / (1 + std::exp(-3*r2*k)) - 1, 0.0);
 }
 
-void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u) {   
+void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u, std_msgs::String &fsm) {   
     double x = X[0]; 
     double y = X[1];
     double theta = X[2];
@@ -100,18 +98,24 @@ void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u) {
     z = kp*(w - Y) + kd*(dw - dY)+ddw;
 
     // Preventing the singularity of A
-    if (std::abs(A.determinant()) < 0.001) {
-        u = {50.0, 50.0};
-        ROS_WARN("The command is unreachable ! (Singular Matrix) :: Setting commands at {50; 50}");
+    if (std::abs(A.determinant()) < 0.0001) {
+        u = {20.0, 10.0};
+        fsm.data = "Singular Matrix";
     }
     else {
         u = A.fullPivLu().solve(z - B);
         // If the boat want to go back, then turning left
-        if ((w[0] - X[0]) * std::cos(X[2]) + (w[1] - X[1]) * std::sin(X[2]) < 0.5)
-            u = {0.0, 150.0};
-        else
-            command(u);        
+        if ((w[0] - X[0]) * std::cos(X[2]) + (w[1] - X[1]) * std::sin(X[2]) < 0) {
+            u = {20.0, 10.0};
+        	fsm.data = "Turning";
+        }
+        else {
+            command(u);  
+            fsm.data = "Regulation";      
+        }
     }
+
+
     ROS_WARN("Setting commands at {%f; %f}", u[0], u[1]);
 }
 
@@ -134,6 +138,9 @@ int main(int argc, char **argv)
     //Publisher
     ros::Publisher u1_pub = n.advertise<std_msgs::Float64>("u1", 10);
     ros::Publisher u2_pub = n.advertise<std_msgs::Float64>("u2", 10);
+
+    // Publisher for the state of the ddbot
+    ros::Publisher fsm_publish = n.advertise<std_msgs::String>("fsm", 1000);
     
     std_msgs::Float64 u1;
     std_msgs::Float64 u2;
@@ -141,11 +148,13 @@ int main(int argc, char **argv)
     n.param<double>("kp", kd, 0);
     n.param<double>("kd", kp, 0);
 
+    std_msgs::String fsm;
     
     ros::Rate loop_rate(25);
     
     while (ros::ok()) {
-        control(w, dw, u);
+        control(w, dw, u, fsm);
+        fsm_publish.publish(fsm);
         u1.data = u[0];
         u2.data = u[1];
         u1_pub.publish(u1);
