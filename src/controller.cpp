@@ -44,7 +44,7 @@ void velocityCallback(const geometry_msgs::TwistStamped::ConstPtr& msg) {
 }
 
 void yawCallback(const std_msgs::Float64::ConstPtr& msg) {
-    X[2] = msg -> data*M_PI/180;
+    X[2] = msg -> data;
 }
 
 void positionCallback(const geometry_msgs::PointStamped::ConstPtr& msg) {

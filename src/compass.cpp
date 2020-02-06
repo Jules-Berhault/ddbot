@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 		char buffer[100];
 		char *line_p = fgets(buffer, sizeof(buffer), lsofFile_p);
 		float data_cap = strtof((buffer),0);
-		msg.data = data_cap;
+		msg.data = data_cap*M_PI/180;
 		chatter_pub.publish(msg);
 		ros::spinOnce();
 		loop_rate.sleep();
