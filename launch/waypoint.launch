@@ -20,6 +20,7 @@
 
 	<node name="kalman_node" pkg="ddbot" type="kalman.py" />
 	<node name="controller" pkg="ddbot" type="controller_node">
+		<param name="ctype" value="kalman" type="double" />
 		<param name="kp" value="2.0" type="double" />
 		<param name="kd" value="2.0" type="double" />
 	</node>
@@ -29,5 +30,4 @@
 	</node>
 	<node name="command_controller" pkg="ddbot" type="command_controller.py" />
 	<node name="thruster" pkg="ddbot" type="thruster.py" />
-	<!-- node pkg="rosbag" type="record" args="-a ../logs/log_rosbag" name="record" output="screen" /-->
 </launch>
