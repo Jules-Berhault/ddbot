@@ -20,8 +20,7 @@ Eigen::Vector2d wanted_speed = {0.0, 0.0};
 Eigen::Vector2d wanted_acceleration = {0.0, 0.0};
 
 
-void posCallback(const geometry_msgs::Twist::ConstPtr& msg)
-{
+void posCallback(const geometry_msgs::Twist::ConstPtr& msg) {
     wanted_position[0]  = wanted_position[0] + msg->linear.x;
     wanted_position[1]= wanted_position[1]+msg->angular.z;
 }
@@ -32,14 +31,20 @@ int main(int argc, char **argv) {
     ros::NodeHandle n;
     ros::NodeHandle n_private("~");
 
+    // Parameters
+    wanted_position[0] = n_private.param<double>("x0", 0.0);
+    wanted_position[1] = n_private.param<double>("y0", 0.0);
+
     // Publisher and Subscriber
     ros::Publisher position_publisher = n.advertise<geometry_msgs::PointStamped>("wanted_position", 0);
     ros::Publisher speed_publisher = n.advertise<geometry_msgs::TwistStamped>("wanted_speed", 0);
     ros::Publisher acceleration_publisher = n.advertise<geometry_msgs::AccelStamped>("wanted_acceleration", 0);
     tf2_ros::TransformBroadcaster tf_broadcaster;
     ros::Publisher visualization_publisher = n.advertise<visualization_msgs::Marker>("/target_marker", 0);
+
     // Subscriber
     ros::Subscriber position_suscribe = n.subscribe("position", 1000, &posCallback);
+
     // Visualization Message
     visualization_msgs::Marker marker;
     marker.header.frame_id = "map";
