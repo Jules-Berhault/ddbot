@@ -18,7 +18,7 @@ freq = 10
 dt = 1/freq
 Y = array([[0, 0]]).T
 Xb = array([[0.1, 0.1]]).T
-Gx = 100*eye(2)
+Gx = 10000*eye(2)
 
 
 def kalman_predict(xup,Gup,u,lambalpha,A):
@@ -49,7 +49,7 @@ def observateur(theta, v, Y, Xb, Gx, dt):
     u = dt*array([[u1, u2]]).T
     A = eye(2)
     C = eye(2) 
-    Galpha = 10*eye(2)
+    Galpha = 25*eye(2)
     Gbeta = 100*eye(2)
     Xb, Gx = kalman(Xb, Gx, u, Y, Galpha, Gbeta, A, C)
     return Xb, Gx
