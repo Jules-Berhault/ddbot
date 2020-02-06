@@ -24,7 +24,8 @@ Eigen::Vector2d dw = {0, 0};
 Eigen::Vector2d ddw = {0, 0};
 
 // Coefficients
-double kp = 1.0, kd = 1.0; 
+double kp, kd; 
+
 
 
 void stateCallback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
@@ -136,6 +137,10 @@ int main(int argc, char **argv)
     
     std_msgs::Float64 u1;
     std_msgs::Float64 u2;
+
+    n.param<double>("kp", kd, 0);
+    n.param<double>("kd", kp, 0);
+
     
     ros::Rate loop_rate(25);
     
