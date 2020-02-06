@@ -11,6 +11,7 @@
 #include "geometry_msgs/PointStamped.h"
 #include "geometry_msgs/TwistStamped.h"
 #include <geometry_msgs/AccelStamped.h>
+#include "geometry_msgs/PoseStamped.h"
 
 #include "geometry_msgs/Twist.h" // Maybe to transform into a TwistStamped
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
@@ -29,6 +30,11 @@ double kp, kd;
 void stateCallback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     X[0] = msg->pose.position.x;
     X[1] = msg->pose.position.y;
+} 
+
+void cartesianCallback(const geometry_msgs::PointStamped::ConstPtr& msg) {
+    X[0] = msg->point.x;
+    X[1] = msg->point.y;
 } 
 
 void velocityCallback(const geometry_msgs::TwistStamped::ConstPtr& msg) {
@@ -114,8 +120,6 @@ void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u, std_ms
             fsm.data = "Regulation";      
         }
     }
-
-
     ROS_WARN("Setting commands at {%f; %f}", u[0], u[1]);
 }
 
@@ -124,16 +128,24 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "pilot");
 
     ros::NodeHandle n;
+    ros::NodeHandle n;
+    ros::NodeHandle n_private("~");
+
+    std::string controller_type = n_private.param<std::string>("ctype", "kalman");
     
     //Suscriber
     ros::Subscriber wanted_suscribe = n.subscribe("wanted_position", 1000, &positionCallback);
     ros::Subscriber wanted_speed_suscribe = n.subscribe("wanted_speed", 1000, &speedCallback);
     ros::Subscriber wanted_acceleration_suscribe = n.subscribe("wanted_acceleration", 1000, &accelerationCallback);
     ros::Subscriber gains_suscribe = n.subscribe("/cmd_vel", 1000, &gainCallback);
-    ros::Subscriber state_subscribe = n.subscribe("state", 1000, &stateCallback);
-    //ros::Subscriber rstate_subscribe = n.subscribe("cartesian_coordinates", 1000, &rstateCallback);
+    
     ros::Subscriber velocity_subscribe = n.subscribe("vel", 1000, &velocityCallback);
     ros::Subscriber yaw_subscribe = n.subscribe("cap", 1000, &yawCallback);
+
+    if (controller_type == "kalman")
+        ros::Subscriber state_subscribe = n.subscribe("state", 1000, &stateCallback);
+    else
+        ros::Subscriber rstate_subscribe = n.subscribe("cartesian_coordinates", 1000, &cartesianCallback);
     
     //Publisher
     ros::Publisher u1_pub = n.advertise<std_msgs::Float64>("u1", 10);
