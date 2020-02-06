@@ -91,9 +91,9 @@ while not rospy.is_shutdown():
     state.pose.position.x = Xb[0]
     state.pose.position.y = Xb[1]
 
-    rospy.logwarn("xb : %f,  xvrai : %f" %(Xb[0], Y[0]))
-    rospy.logwarn("yb : %f,  yvrai : %f" %(Xb[1], Y[1]))
-    #rospy.logwarn(" : %f" %Xb[1])
+    # rospy.logwarn("xb : %f,  xvrai : %f" %(Xb[0], Y[0]))
+    # rospy.logwarn("yb : %f,  yvrai : %f" %(Xb[1], Y[1]))
+    # rospy.logwarn(" : %f" %Xb[1])
 
     state.pose.orientation.x = q[0]
     state.pose.orientation.x = q[1]

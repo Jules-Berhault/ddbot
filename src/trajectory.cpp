@@ -17,7 +17,7 @@
 
 double Lx = 30;
 double Ly = 15;
-double omega = 0.1;
+double omega = 0.05;
 
 Eigen::Vector2d wanted_position = {0.0, 0.0};
 Eigen::Vector2d wanted_speed = {0.0, 0.0};

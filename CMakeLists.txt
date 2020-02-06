@@ -144,7 +144,7 @@ add_executable(waypoint_node src/waypoint.cpp)
 add_executable(controller_node src/controller.cpp)
 #add_executable(observer_node src/observer.cpp)
 add_executable(compass_node src/compass.cpp)
-add_executable(encoders_driver_node src/encoders_driver.cpp)
+#add_executable(encoders_driver_node src/encoders_driver.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -164,8 +164,8 @@ target_link_libraries(trajectory_node ${catkin_LIBRARIES})
 target_link_libraries(waypoint_node ${catkin_LIBRARIES})
 #target_link_libraries(observer_node ${catkin_LIBRARIES})
 target_link_libraries(compass_node ${catkin_LIBRARIES})
-target_link_libraries(encoders_driver_node ${catkin_LIBRARIES})
-target_link_libraries(libserial.so ${catkin_LIBRARIES})
+#target_link_libraries(encoders_driver_node ${catkin_LIBRARIES})
+
 #############
 ## Install ##
 #############

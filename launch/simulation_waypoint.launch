@@ -1,0 +1,6 @@
+<launch>
+	<node name="simulator" pkg="ddbot" type="simulator_node" />
+	<node name="kalman_node" pkg="ddbot" type="kalman.py" />
+	<node name="controller" pkg="ddbot" type="controller_node" />
+	<node name="trajectory" pkg="ddbot" type="waypoint_node" />
+</launch>

@@ -66,8 +66,13 @@ void gainCallback(const geometry_msgs::Twist::ConstPtr& msg) {
 
 void command(Eigen::Vector2d &u) {
     // Return the tresholded command between 0 and 255 for sending pwm on motors
-    u[0] = std::max(2*255* (1 / (1 + std::exp(-1/50*u[0]) - 0.5)), 0.0);
-    u[1] = std::max(2*255* (1 / (1 + std::exp(-1/50*u[1]) - 0.5)), 0.0);
+    double M = std::max(u[0], u[1]);
+    double r1 = u[0]/M;
+    double r2 = u[1]/M;
+    double k = std::min(1.0, M/255.0);
+
+    u[0] = 255*std::max(2 / (1 + std::exp(-3*r1*k)) - 1, 0.0);
+    u[1] = 255*std::max(2 / (1 + std::exp(-3*r2*k)) - 1, 0.0);
 }
 
 void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u) {   
@@ -90,17 +95,23 @@ void control(Eigen::Vector2d &w, Eigen::Vector2d &dw, Eigen::Vector2d &u) {
     Eigen::Vector2d b = {2, 3};
     Eigen::Vector2d z;
 
-    z = 2*(w - Y) + 2*(dw - dY);
-    // z = kp*(w - Y) + kd*(dw - dY)+ddw;
+    // z = 2*(w - Y) + 2*(dw - dY);
+    z = kp*(w - Y) + kd*(dw - dY)+ddw;
 
     // Preventing the singularity of A
     if (std::abs(A.determinant()) < 0.001) {
         u = {50.0, 50.0};
+        ROS_WARN("The command is unreachable ! (Singular Matrix) :: Setting commands at {50; 50}");
     }
     else {
         u = A.fullPivLu().solve(z - B);
-        command(u);
-    } 
+        // If the boat want to go back, then turning left
+        if ((w[0] - X[0]) * std::cos(X[2]) + (w[1] - X[1]) * std::sin(X[2]) < 0.5)
+            u = {0.0, 150.0};
+        else
+            command(u);        
+    }
+    ROS_WARN("Setting commands at {%f; %f}", u[0], u[1]);
 }
 
 int main(int argc, char **argv)
