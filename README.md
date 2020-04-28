@@ -19,4 +19,6 @@ The project aims to make a boat following a Lissajous Curve.
 
 [![video](https://github.com/gwendalp/ddbot/blob/master/doc/image/ddbot.gif)]( https://youtu.be/okoYAAOAIzY  "video")
 
-Here you can watch the result in video : https://github.com/gwendalp/ddbot/blob/master/doc/image/ddbot.gif
+Here you can watch the result in video : https://youtu.be/okoYAAOAIzY
+
+
